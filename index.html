@@ -288,32 +288,43 @@
         -webkit-text-size-adjust: none !important;
       }
 
-      /* Force all Tailwind text sizes to use exact pixel values */
-      .text-\[9px\] { font-size: 9px !important; }
-      .text-\[10px\] { font-size: 10px !important; }
-      .text-\[11px\] { font-size: 11px !important; }
-      .text-\[13px\] { font-size: 13px !important; }
-      .text-xs { font-size: 12px !important; line-height: 1rem !important; }
-      .text-sm { font-size: 14px !important; line-height: 1.25rem !important; }
-      .text-base { font-size: 16px !important; line-height: 1.5rem !important; }
-      .text-lg { font-size: 18px !important; line-height: 1.75rem !important; }
-      .text-xl { font-size: 20px !important; line-height: 1.75rem !important; }
-      .text-2xl { font-size: 24px !important; line-height: 2rem !important; }
-      .text-3xl { font-size: 30px !important; line-height: 2.25rem !important; }
-      .text-4xl { font-size: 36px !important; line-height: 2.5rem !important; }
-      .text-5xl { font-size: 48px !important; line-height: 1 !important; }
+      /* ------------------------------------------------------------------
+         TYPE SCALE — ONE KNOB CONTROLS EVERY TEXT SIZE IN THE APP.
+
+         Change --type-scale below and every size moves together.
+           1      = the original sizes
+           1.06   = about one point larger  (current)
+           1.12   = noticeably larger
+         Sizes stay explicit in px, so browser text-inflation is still
+         blocked — they are simply calculated instead of typed by hand.
+         ------------------------------------------------------------------ */
+      :root { --type-scale: 1.06; }
+
+      .text-\[9px\]  { font-size: calc(9px  * var(--type-scale)) !important; }
+      .text-\[10px\] { font-size: calc(10px * var(--type-scale)) !important; }
+      .text-\[11px\] { font-size: calc(11px * var(--type-scale)) !important; }
+      .text-\[13px\] { font-size: calc(13px * var(--type-scale)) !important; }
+      .text-xs   { font-size: calc(12px * var(--type-scale)) !important; line-height: 1.35 !important; }
+      .text-sm   { font-size: calc(14px * var(--type-scale)) !important; line-height: 1.4 !important; }
+      .text-base { font-size: calc(16px * var(--type-scale)) !important; line-height: 1.5 !important; }
+      .text-lg   { font-size: calc(18px * var(--type-scale)) !important; line-height: 1.45 !important; }
+      .text-xl   { font-size: calc(20px * var(--type-scale)) !important; line-height: 1.4 !important; }
+      .text-2xl  { font-size: calc(24px * var(--type-scale)) !important; line-height: 1.3 !important; }
+      .text-3xl  { font-size: calc(30px * var(--type-scale)) !important; line-height: 1.2 !important; }
+      .text-4xl  { font-size: calc(36px * var(--type-scale)) !important; line-height: 1.15 !important; }
+      .text-5xl  { font-size: calc(48px * var(--type-scale)) !important; line-height: 1.05 !important; }
 
       /* Responsive text overrides - sm: breakpoint (640px+) */
       @media (min-width: 640px) {
-        .sm\:text-xs { font-size: 12px !important; }
-        .sm\:text-sm { font-size: 14px !important; }
-        .sm\:text-base { font-size: 16px !important; }
-        .sm\:text-lg { font-size: 18px !important; }
-        .sm\:text-xl { font-size: 20px !important; }
-        .sm\:text-2xl { font-size: 24px !important; }
-        .sm\:text-3xl { font-size: 30px !important; }
-        .sm\:text-4xl { font-size: 36px !important; }
-        .sm\:text-\[10px\] { font-size: 10px !important; }
+        .sm\:text-xs   { font-size: calc(12px * var(--type-scale)) !important; }
+        .sm\:text-sm   { font-size: calc(14px * var(--type-scale)) !important; }
+        .sm\:text-base { font-size: calc(16px * var(--type-scale)) !important; }
+        .sm\:text-lg   { font-size: calc(18px * var(--type-scale)) !important; }
+        .sm\:text-xl   { font-size: calc(20px * var(--type-scale)) !important; }
+        .sm\:text-2xl  { font-size: calc(24px * var(--type-scale)) !important; }
+        .sm\:text-3xl  { font-size: calc(30px * var(--type-scale)) !important; }
+        .sm\:text-4xl  { font-size: calc(36px * var(--type-scale)) !important; }
+        .sm\:text-\[10px\] { font-size: calc(10px * var(--type-scale)) !important; }
       }
 
       /* Force tracking/letter-spacing */

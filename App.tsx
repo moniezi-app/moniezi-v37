@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.1.1"; // v37.1.1: type scale +6%; manifest id fix; post-install guidance
+const CUSTOMER_VERSION = "37.1.2"; // v37.1.2: type scale now a single variable (--type-scale)
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
