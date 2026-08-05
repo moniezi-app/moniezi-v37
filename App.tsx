@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.0.3"; // v37.0.3: date arrows beside the date; transactions filters collapsed
+const CUSTOMER_VERSION = "37.0.4"; // v37.0.4: safe sample data — first-run choice, banner, empty-only load
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -3794,9 +3794,34 @@ const demoMileageTrips: MileageTrip[] = [
     window.location.reload();
   };
 
-  const handleResetDemoDataOnly = async () => {
+  /**
+   * True when the customer has recorded nothing yet.
+   *
+   * Loading sample data REPLACES everything (see handleSeedDemoData), so it is
+   * only ever offered while there is nothing to destroy. This single condition
+   * is the safety check: no empty app, no button.
+   */
+  const isAppEmpty =
+    transactions.length === 0 &&
+    invoices.length === 0 &&
+    estimates.length === 0 &&
+    clients.length === 0 &&
+    receipts.length === 0 &&
+    mileageTrips.length === 0 &&
+    taxPayments.length === 0;
+
+  /** Only reachable while sample data is loaded, so nothing real can be lost. */
+  const handleRemoveSampleData = () => {
+    performReset();
+    setIsDemoData(false);
+    showToast("Sample data removed. The app is ready for your own records.", "success");
+  };
+
+  const handleLoadSampleData = async () => {
     await handleSeedDemoData();
-    showToast("Demo data reset for this MONIEZI Pro Finance build.", "success");
+    setShowMainMenu(false);
+    setCurrentPage(Page.Dashboard);
+    showToast("Sample data loaded. Remove it any time from the banner at the top.", "success");
   };
 
   const confirmDeleteInvoice = () => {
@@ -7140,6 +7165,64 @@ html, body, #root {
 
       <div key={`main-scroll-${currentPage}`} ref={mainScrollRef} className="main-scroll-lock flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 md:px-8 pt-5 sm:pt-6 md:pt-7 no-print custom-scrollbar" style={{ paddingBottom: isKeyboardEditing ? 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' : 'calc(11rem + env(safe-area-inset-bottom, 0px))' }} role="main">
 
+      {/* Sample-data banner. Always visible while example records are loaded, so
+          nobody mistakes them for real figures and the exit is always one tap. */}
+      {isDemoData && (
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
+          <Sparkles size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold text-amber-900 dark:text-amber-100">Sample data</div>
+            <div className="text-xs font-medium text-amber-800/80 dark:text-amber-200/70">
+              These are example records, not your business.
+            </div>
+          </div>
+          <button
+            onClick={handleRemoveSampleData}
+            className="shrink-0 rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-amber-700"
+          >
+            Remove
+          </button>
+        </div>
+      )}
+
+      {/* First run. Two honest choices — we never force anyone through the demo. */}
+      {isAppEmpty && !isDemoData && currentPage === Page.Dashboard && (
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="font-brand text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Welcome to MONIEZI
+          </h3>
+          <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
+            Nothing recorded yet. Where would you like to start?
+          </p>
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <button
+              onClick={() => { setCurrentPage(Page.AllTransactions); handleContextualHeaderAdd(); }}
+              className="flex items-start gap-3 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:border-blue-500 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:border-blue-500"
+            >
+              <Plus size={20} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
+              <span className="min-w-0">
+                <span className="block font-bold text-slate-900 dark:text-white">Record my first job</span>
+                <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
+                  Start with a clean app and your own work
+                </span>
+              </span>
+            </button>
+            <button
+              onClick={handleLoadSampleData}
+              className="flex items-start gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-4 text-left transition-colors hover:border-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-400"
+            >
+              <Sparkles size={20} className="mt-0.5 shrink-0 text-slate-600 dark:text-slate-300" strokeWidth={2} />
+              <span className="min-w-0">
+                <span className="block font-bold text-slate-900 dark:text-white">Show me an example first</span>
+                <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
+                  A filled-in business you can remove any time
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
       <PageErrorBoundary key={currentPage} onReset={() => setCurrentPage(Page.Dashboard)}>
 
         {(currentPage === Page.Dashboard) && (
@@ -9984,12 +10067,14 @@ html, body, #root {
                     >
                       <Repeat size={20} /> Reload App
                     </button>
+                    {isDemoData && (
                     <button
-                      onClick={handleResetDemoDataOnly}
-                      className="flex items-center justify-center gap-3 py-5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all font-bold text-sm uppercase tracking-wider active:scale-95"
+                      onClick={handleRemoveSampleData}
+                      className="flex items-center justify-center gap-3 py-5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all font-bold text-sm uppercase tracking-wider active:scale-95"
                     >
-                      <Sparkles size={20} /> Reset Demo Data Only
+                      <Trash2 size={20} /> Remove Sample Data
                     </button>
+                    )}
                     <button
                       onClick={handleExportBackup}
                       className="flex items-center justify-center gap-3 py-5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all font-bold text-sm uppercase tracking-wider active:scale-95"
@@ -10275,10 +10360,12 @@ html, body, #root {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                      <button onClick={handleSeedDemoData} className="py-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 rounded-lg text-sm font-bold uppercase tracking-widest shadow-lg transition-all flex flex-col items-center justify-center gap-3 active:scale-95">
+                      {(isAppEmpty || isDemoData) && (
+                      <button onClick={handleLoadSampleData} className="py-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 rounded-lg text-sm font-bold uppercase tracking-widest shadow-lg transition-all flex flex-col items-center justify-center gap-3 active:scale-95">
                         {seedSuccess ? <CheckCircle size={24} /> : <Sparkles size={24} />}
-                        <span>{seedSuccess ? 'Demo Data Loaded' : 'Load Demo Data'}</span>
+                        <span>{seedSuccess ? 'Sample Data Loaded' : 'Load Sample Data'}</span>
                       </button>
+                      )}
                       <button onClick={handleClearData} className="py-6 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 hover:from-red-100 hover:to-orange-100 dark:hover:from-red-900/30 dark:hover:to-orange-900/30 border-2 border-red-200 dark:border-red-800 text-red-900 dark:text-red-100 rounded-lg text-sm font-bold uppercase tracking-widest shadow-lg transition-all flex flex-col items-center justify-center gap-3 active:scale-95">
                         <AlertTriangle size={24} />
                         <span>Reset & Clear All</span>
@@ -10290,7 +10377,7 @@ html, body, #root {
                       <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                       <div className="text-sm text-red-900 dark:text-red-100">
                         <p className="font-semibold mb-1">⚠️ Warning: Destructive Actions</p>
-                        <p className="mb-2"><strong>Load Demo Data:</strong> Adds sample transactions, invoices, and tax payments to help you explore the app's features.</p>
+                        <p className="mb-2"><strong>Load Sample Data:</strong> Replaces everything with example records so you can explore. Only offered while the app is empty, so your own records can never be overwritten.</p>
                         <p><strong>Reset & Clear All:</strong> Permanently deletes ALL your data including transactions, invoices, tax payments, and custom categories. This action cannot be undone!</p>
                       </div>
                     </div>
@@ -10664,6 +10751,43 @@ html, body, #root {
               </button>
             </div>
           </div>
+
+          {(isAppEmpty || isDemoData) && (
+            <div>
+              <div className="px-1 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Trying MONIEZI
+              </div>
+              <div className="space-y-1">
+                {isDemoData ? (
+                  <button
+                    onClick={() => { handleRemoveSampleData(); setShowMainMenu(false); }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                      <Trash2 size={18} />
+                    </span>
+                    <span className="min-w-0">
+                      Remove sample data
+                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Clears the example records and starts you fresh</span>
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleLoadSampleData}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <Sparkles size={18} />
+                    </span>
+                    <span className="min-w-0">
+                      Try sample data
+                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">See a filled-in example. Removable any time.</span>
+                    </span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           <div>
             <div className="px-1 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
