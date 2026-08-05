@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.1.0"; // v37.1.0: Outfit Variable, self-hosted; tabular figures for money
+const CUSTOMER_VERSION = "37.1.1"; // v37.1.1: type scale +6%; manifest id fix; post-install guidance
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1032,6 +1032,7 @@ export default function App() {
   const [showIosInstallCta, setShowIosInstallCta] = useState(false);
   const [showIosInstallHelp, setShowIosInstallHelp] = useState(false);
   const [isRunningStandalone, setIsRunningStandalone] = useState(false);
+  const [justInstalled, setJustInstalled] = useState(false);
 
   const getIosInstallContext = useCallback(() => {
     try {
@@ -1056,6 +1057,22 @@ export default function App() {
       setIsRunningStandalone(false);
       return false;
     }
+  }, []);
+
+  /**
+   * A web page cannot close its own tab or launch another app — the browser
+   * forbids both. So when installation completes we say plainly what to do next,
+   * rather than leaving the customer looking at a browser tab wondering whether
+   * anything happened.
+   */
+  useEffect(() => {
+    const onInstalled = () => {
+      setJustInstalled(true);
+      setShowDeferredInstallCta(false);
+      setDeferredInstallPrompt(null);
+    };
+    window.addEventListener('appinstalled', onInstalled);
+    return () => window.removeEventListener('appinstalled', onInstalled);
   }, []);
 
   const triggerDeferredInstallPrompt = useCallback(async () => {
@@ -7076,6 +7093,35 @@ html, body, #root {
 
       <ToastContainer notifications={notifications} remove={removeToast} />
 
+
+      {justInstalled && !isRunningStandalone && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4 modal-overlay">
+          <div className="w-full max-w-sm rounded-2xl border border-emerald-500/30 bg-white p-6 shadow-2xl dark:bg-slate-900">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="rounded-full bg-emerald-100 p-3 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <CheckCircle size={24} strokeWidth={2} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white sm:text-xl">MONIEZI is installed</h3>
+            </div>
+            <p className="mb-4 font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+              You&apos;ll find it on your home screen with your other apps. Two things left:
+            </p>
+            <ol className="mb-6 space-y-2 pl-5 text-sm font-medium text-slate-600 dark:text-slate-300" style={{ listStyleType: 'decimal' }}>
+              <li>Close this browser tab.</li>
+              <li>Open MONIEZI from your home screen instead. That&apos;s where you&apos;ll use it from now on.</li>
+            </ol>
+            <p className="mb-5 text-xs text-slate-500 dark:text-slate-400">
+              Your records are the same in both. The installed app just opens faster and works without the browser.
+            </p>
+            <button
+              onClick={() => setJustInstalled(false)}
+              className="w-full rounded-lg bg-slate-900 py-3 font-bold text-white transition-colors hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       {showResetConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 modal-overlay">

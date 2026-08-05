@@ -1,8 +1,8 @@
 {
   "name": "MONIEZI Pro Finance",
   "short_name": "MONIEZI",
-  "id": "/moniezi-pro-finance-v35/",
-  "description": "MONIEZI Pro Finance \u2014 private business finance, tax reporting, invoicing, mileage, receipts, and internal fundraising tracking",
+  "id": "/moniezi-pro-finance/",
+  "description": "MONIEZI Pro Finance — private business finance, tax reporting, invoicing, mileage, receipts, and internal fundraising tracking",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -94,5 +94,12 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  }
 }

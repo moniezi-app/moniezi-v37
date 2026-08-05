@@ -433,3 +433,14 @@ html, body, #root {
 body {
   font-variant-numeric: tabular-nums;
 }
+
+
+/* ---------------------------------------------------------------------------
+   Outfit has a shorter x-height than Roboto, so it reads about a point smaller
+   at the same pixel size. Nudging the root size up 6% restores the old optical
+   size. Tailwind sizing and spacing are rem-based, so type and layout scale
+   together rather than type growing inside unchanged boxes.
+   --------------------------------------------------------------------------- */
+html {
+  font-size: 106.25%;
+}
