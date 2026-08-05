@@ -790,7 +790,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.0.1"; // v37.0.1: main menu drawer + single-row period selector
+const CUSTOMER_VERSION = "37.0.2"; // v37.0.2: fix light-theme contrast on activation screen
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1750,7 +1750,7 @@ export default function App() {
       return;
     }
     if (!LICENSE_API_BASE) {
-      setLicenseError('License activation is not configured for this release.');
+      setLicenseError('This build has no licence server address. VITE_LICENSE_API_BASE was empty when it was built.');
       return;
     }
 
@@ -6176,7 +6176,7 @@ const demoMileageTrips: MileageTrip[] = [
   // Show license activation screen if not valid
   if (LICENSING_ENABLED && isLicenseValid === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+      <div className="license-gate min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />

@@ -372,3 +372,49 @@ html.dark .moniezi-equity-primary-tab.is-inactive .moniezi-equity-primary-tab-la
   color: #f8fafc !important;
   -webkit-text-fill-color: #f8fafc !important;
 }
+
+/* ---------------------------------------------------------------------------
+   Activation screen: always dark by design.
+
+   The light-theme contrast pass above repaints slate text near-black for
+   readability on white. The activation screen keeps a dark gradient background
+   in both themes, so those rules made it dark-on-dark and unreadable. Scope the
+   screen out and restore its intended colours.
+   --------------------------------------------------------------------------- */
+html.theme-light .license-gate h1,
+html.theme-light .license-gate h2,
+html.theme-light .license-gate h3,
+html.theme-light .license-gate .text-white {
+  color: #ffffff !important;
+}
+
+html.theme-light .license-gate .text-slate-200 { color: #e2e8f0 !important; }
+html.theme-light .license-gate .text-slate-300 { color: #cbd5e1 !important; }
+html.theme-light .license-gate .text-slate-400 { color: #94a3b8 !important; }
+html.theme-light .license-gate .text-slate-500 { color: #94a3b8 !important; }
+html.theme-light .license-gate .text-slate-600 { color: #cbd5e1 !important; }
+
+html.theme-light .license-gate label,
+html.theme-light .license-gate button,
+html.theme-light .license-gate input {
+  color: #ffffff;
+}
+
+html.theme-light .license-gate input {
+  color: #ffffff !important;
+  background-color: #020617 !important;
+  border-color: #334155 !important;
+}
+
+html.theme-light .license-gate input::placeholder {
+  color: #64748b !important;
+  font-weight: 400 !important;
+}
+
+html.theme-light .license-gate .text-red-400 { color: #f87171 !important; }
+html.theme-light .license-gate .text-emerald-400 { color: #34d399 !important; }
+html.theme-light .license-gate .text-blue-400 { color: #60a5fa !important; }
+
+html.theme-light .license-gate [class*="border-slate-"] {
+  border-color: #1e293b !important;
+}
