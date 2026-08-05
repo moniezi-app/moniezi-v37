@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.0.4"; // v37.0.4: safe sample data — first-run choice, banner, empty-only load
+const CUSTOMER_VERSION = "37.0.5"; // v37.0.5: first-run button opens Quick Add instead of the expense form
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -7196,14 +7196,14 @@ html, body, #root {
           </p>
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button
-              onClick={() => { setCurrentPage(Page.AllTransactions); handleContextualHeaderAdd(); }}
+              onClick={() => setShowQuickAddMenu(true)}
               className="flex items-start gap-3 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:border-blue-500 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:border-blue-500"
             >
               <Plus size={20} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
               <span className="min-w-0">
-                <span className="block font-bold text-slate-900 dark:text-white">Record my first job</span>
+                <span className="block font-bold text-slate-900 dark:text-white">Record my first entry</span>
                 <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
-                  Start with a clean app and your own work
+                  Income, expense, invoice, mileage — you choose
                 </span>
               </span>
             </button>
