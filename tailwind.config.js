@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        brand: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Outfit Variable", "Outfit", "system-ui", "-apple-system", "sans-serif"],
+        brand: ["Outfit Variable", "Outfit", "system-ui", "-apple-system", "sans-serif"],
       },
       colors: {
         slatebg: "#ffffff",

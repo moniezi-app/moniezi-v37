@@ -418,3 +418,18 @@ html.theme-light .license-gate .text-blue-400 { color: #60a5fa !important; }
 html.theme-light .license-gate [class*="border-slate-"] {
   border-color: #1e293b !important;
 }
+
+/* ---------------------------------------------------------------------------
+   Outfit Variable, bundled with the app (@fontsource-variable/outfit).
+   Self-hosted deliberately: a Google Fonts link would make the app fetch a file
+   from Google's servers on every load, which contradicts the privacy claim.
+   --------------------------------------------------------------------------- */
+html, body, #root {
+  font-family: "Outfit Variable", "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Money should line up in columns. Tabular figures give every digit the same
+   width, so $1,111.11 and $8,888.88 occupy identical space. */
+body {
+  font-variant-numeric: tabular-nums;
+}

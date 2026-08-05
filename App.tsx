@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.0.5"; // v37.0.5: first-run button opens Quick Add instead of the expense form
+const CUSTOMER_VERSION = "37.1.0"; // v37.1.0: Outfit Variable, self-hosted; tabular figures for money
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
