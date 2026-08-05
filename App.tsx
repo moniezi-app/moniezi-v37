@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.1.2"; // v37.1.2: type scale now a single variable (--type-scale)
+const CUSTOMER_VERSION = "37.2.0"; // v37.2.0: readable type scale — 12px floor, small sizes lifted
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";

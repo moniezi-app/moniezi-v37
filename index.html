@@ -298,33 +298,37 @@
          Sizes stay explicit in px, so browser text-inflation is still
          blocked — they are simply calculated instead of typed by hand.
          ------------------------------------------------------------------ */
-      :root { --type-scale: 1.06; }
+      :root { --type-scale: 1; }
 
-      .text-\[9px\]  { font-size: calc(9px  * var(--type-scale)) !important; }
-      .text-\[10px\] { font-size: calc(10px * var(--type-scale)) !important; }
-      .text-\[11px\] { font-size: calc(11px * var(--type-scale)) !important; }
-      .text-\[13px\] { font-size: calc(13px * var(--type-scale)) !important; }
-      .text-xs   { font-size: calc(12px * var(--type-scale)) !important; line-height: 1.35 !important; }
-      .text-sm   { font-size: calc(14px * var(--type-scale)) !important; line-height: 1.4 !important; }
-      .text-base { font-size: calc(16px * var(--type-scale)) !important; line-height: 1.5 !important; }
-      .text-lg   { font-size: calc(18px * var(--type-scale)) !important; line-height: 1.45 !important; }
-      .text-xl   { font-size: calc(20px * var(--type-scale)) !important; line-height: 1.4 !important; }
-      .text-2xl  { font-size: calc(24px * var(--type-scale)) !important; line-height: 1.3 !important; }
-      .text-3xl  { font-size: calc(30px * var(--type-scale)) !important; line-height: 1.2 !important; }
-      .text-4xl  { font-size: calc(36px * var(--type-scale)) !important; line-height: 1.15 !important; }
-      .text-5xl  { font-size: calc(48px * var(--type-scale)) !important; line-height: 1.05 !important; }
+      /* The small sizes carry most of this app — text-xs alone is used 340
+         times. They get the biggest lift; headings were already fine. Nothing
+         renders below 12px anywhere. Raise --type-scale above to grow it all
+         further. */
+      .text-\[9px\]  { font-size: calc(12px   * var(--type-scale)) !important; line-height: 1.4 !important; }
+      .text-\[10px\] { font-size: calc(13px   * var(--type-scale)) !important; line-height: 1.4 !important; }
+      .text-\[11px\] { font-size: calc(13.5px * var(--type-scale)) !important; line-height: 1.4 !important; }
+      .text-\[13px\] { font-size: calc(14.5px * var(--type-scale)) !important; line-height: 1.45 !important; }
+      .text-xs   { font-size: calc(14px   * var(--type-scale)) !important; line-height: 1.45 !important; }
+      .text-sm   { font-size: calc(15.5px * var(--type-scale)) !important; line-height: 1.5 !important; }
+      .text-base { font-size: calc(17px   * var(--type-scale)) !important; line-height: 1.5 !important; }
+      .text-lg   { font-size: calc(19px   * var(--type-scale)) !important; line-height: 1.45 !important; }
+      .text-xl   { font-size: calc(21px   * var(--type-scale)) !important; line-height: 1.4 !important; }
+      .text-2xl  { font-size: calc(25px   * var(--type-scale)) !important; line-height: 1.3 !important; }
+      .text-3xl  { font-size: calc(31px   * var(--type-scale)) !important; line-height: 1.2 !important; }
+      .text-4xl  { font-size: calc(37px   * var(--type-scale)) !important; line-height: 1.15 !important; }
+      .text-5xl  { font-size: calc(48px   * var(--type-scale)) !important; line-height: 1.05 !important; }
 
       /* Responsive text overrides - sm: breakpoint (640px+) */
       @media (min-width: 640px) {
-        .sm\:text-xs   { font-size: calc(12px * var(--type-scale)) !important; }
-        .sm\:text-sm   { font-size: calc(14px * var(--type-scale)) !important; }
-        .sm\:text-base { font-size: calc(16px * var(--type-scale)) !important; }
-        .sm\:text-lg   { font-size: calc(18px * var(--type-scale)) !important; }
-        .sm\:text-xl   { font-size: calc(20px * var(--type-scale)) !important; }
-        .sm\:text-2xl  { font-size: calc(24px * var(--type-scale)) !important; }
-        .sm\:text-3xl  { font-size: calc(30px * var(--type-scale)) !important; }
-        .sm\:text-4xl  { font-size: calc(36px * var(--type-scale)) !important; }
-        .sm\:text-\[10px\] { font-size: calc(10px * var(--type-scale)) !important; }
+        .sm\:text-xs   { font-size: calc(14px   * var(--type-scale)) !important; }
+        .sm\:text-sm   { font-size: calc(15.5px * var(--type-scale)) !important; }
+        .sm\:text-base { font-size: calc(17px   * var(--type-scale)) !important; }
+        .sm\:text-lg   { font-size: calc(19px   * var(--type-scale)) !important; }
+        .sm\:text-xl   { font-size: calc(21px   * var(--type-scale)) !important; }
+        .sm\:text-2xl  { font-size: calc(25px   * var(--type-scale)) !important; }
+        .sm\:text-3xl  { font-size: calc(31px   * var(--type-scale)) !important; }
+        .sm\:text-4xl  { font-size: calc(37px   * var(--type-scale)) !important; }
+        .sm\:text-\[10px\] { font-size: calc(13px * var(--type-scale)) !important; }
       }
 
       /* Force tracking/letter-spacing */
