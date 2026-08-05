@@ -84,6 +84,7 @@ import {
   ToggleRight,
   Copy,
   ClipboardList,
+  Filter,
   Menu as MenuIcon
 } from 'lucide-react';
 import { Page, Transaction, Invoice, Estimate, Client, ClientStatus, UserSettings, Notification, FilterPeriod, RecurrenceFrequency, FilingStatus, TaxPayment, TaxEstimationMethod, InvoiceItem, EstimateItem, CustomCategories, Receipt as ReceiptType, MileageTrip, CompanyEquityState } from './types';
@@ -703,18 +704,7 @@ const PeriodSelector: React.FC<{
 
   return (
     <div className="mb-6 min-w-0 max-w-full">
-      <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm min-w-0 max-w-full">
-
-        <button
-          onClick={() => navigateDate(-1)}
-          disabled={!steppable}
-          aria-label="Previous period"
-          className={`shrink-0 p-2 rounded-lg transition-colors ${steppable
-            ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
-        >
-          <ChevronLeft size={20} />
-        </button>
+      <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm min-w-0 max-w-full">
 
         <div className="relative shrink-0">
           <select
@@ -730,21 +720,35 @@ const PeriodSelector: React.FC<{
           <ChevronDown size={13} className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
         </div>
 
-        <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-center font-brand font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">
-          <Calendar size={15} className="text-blue-500 shrink-0" />
-          <span className="truncate">{getLabel()}</span>
-        </div>
+        {/* Arrows sit either side of the date they change, not off at the edge. */}
+        <div className="flex items-center justify-end gap-1 min-w-0 flex-1">
+          <button
+            onClick={() => navigateDate(-1)}
+            disabled={!steppable}
+            aria-label="Previous period"
+            className={`shrink-0 p-1.5 rounded-lg transition-colors ${steppable
+              ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
+          >
+            <ChevronLeft size={20} />
+          </button>
 
-        <button
-          onClick={() => navigateDate(1)}
-          disabled={!steppable}
-          aria-label="Next period"
-          className={`shrink-0 p-2 rounded-lg transition-colors ${steppable
-            ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
-        >
-          <ChevronRight size={20} />
-        </button>
+          <div className="flex items-center justify-center gap-1.5 min-w-0 text-center font-brand font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">
+            <Calendar size={15} className="text-blue-500 shrink-0" />
+            <span className="truncate">{getLabel()}</span>
+          </div>
+
+          <button
+            onClick={() => navigateDate(1)}
+            disabled={!steppable}
+            aria-label="Next period"
+            className={`shrink-0 p-1.5 rounded-lg transition-colors ${steppable
+              ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -790,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.0.2"; // v37.0.2: fix light-theme contrast on activation screen
+const CUSTOMER_VERSION = "37.0.3"; // v37.0.3: date arrows beside the date; transactions filters collapsed
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1233,6 +1237,7 @@ export default function App() {
   const previousDrawerMode = useRef<'add' | 'edit_tx' | 'edit_inv' | 'tax_payments' | 'mileage'>('add');
 
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'income' | 'expense' | 'invoice'>('all');
+  const [showTxnFilters, setShowTxnFilters] = useState(false);
   const [lastYearCalc, setLastYearCalc] = useState({ profit: '', tax: '' });
   const [selectedInvoiceForDoc, setSelectedInvoiceForDoc] = useState<Invoice | null>(null);
   const [selectedEstimateForDoc, setSelectedEstimateForDoc] = useState<Estimate | null>(null);
@@ -7512,22 +7517,63 @@ html, body, #root {
 
              <PeriodSelector period={filterPeriod} setPeriod={setFilterPeriod} refDate={referenceDate} setRefDate={setReferenceDate} />
 
-             {(currentPage === Page.Expenses || currentPage === Page.AllTransactions || currentPage === Page.Ledger) && (
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                 <div className="flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
-                   <div className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Receipts</div>
-                   <button onClick={() => setExpenseReceiptFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReceiptFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>All</button>
-                   <button onClick={() => setExpenseReceiptFilter('with_receipts')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReceiptFilter === 'with_receipts' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>With receipts</button>
-                   <button onClick={() => setExpenseReceiptFilter('without_receipts')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReceiptFilter === 'without_receipts' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>Without receipts</button>
+             {(currentPage === Page.Expenses || currentPage === Page.AllTransactions || currentPage === Page.Ledger) && (() => {
+               // Receipts + review status are occasional refinements, not the main
+               // way people read this screen. Collapsed by default so the list
+               // starts higher up; the badge shows when something is filtering.
+               const activeCount =
+                 (expenseReceiptFilter !== 'all' ? 1 : 0) + (expenseReviewFilter !== 'all' ? 1 : 0);
+               return (
+                 <div>
+                   <div className="flex items-center gap-2">
+                     <button
+                       onClick={() => setShowTxnFilters(v => !v)}
+                       aria-expanded={showTxnFilters}
+                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border transition-colors ${
+                         activeCount > 0
+                           ? 'bg-blue-600 text-white border-blue-600'
+                           : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'
+                       }`}
+                     >
+                       <Filter size={14} />
+                       Filters
+                       {activeCount > 0 && (
+                         <span className="ml-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-white/25 flex items-center justify-center text-[11px]">
+                           {activeCount}
+                         </span>
+                       )}
+                       {showTxnFilters ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                     </button>
+
+                     {activeCount > 0 && (
+                       <button
+                         onClick={() => { setExpenseReceiptFilter('all'); setExpenseReviewFilter('all'); }}
+                         className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                       >
+                         Clear
+                       </button>
+                     )}
+                   </div>
+
+                   {showTxnFilters && (
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 animate-in fade-in duration-150">
+                       <div className="flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+                         <div className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Receipts</div>
+                         <button onClick={() => setExpenseReceiptFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReceiptFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>All</button>
+                         <button onClick={() => setExpenseReceiptFilter('with_receipts')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReceiptFilter === 'with_receipts' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>With receipts</button>
+                         <button onClick={() => setExpenseReceiptFilter('without_receipts')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReceiptFilter === 'without_receipts' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>Without receipts</button>
+                       </div>
+                       <div className="flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+                         <div className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Review status</div>
+                         <button onClick={() => setExpenseReviewFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReviewFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>All</button>
+                         <button onClick={() => setExpenseReviewFilter('new')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReviewFilter === 'new' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>New</button>
+                         <button onClick={() => setExpenseReviewFilter('reviewed')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReviewFilter === 'reviewed' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>Reviewed</button>
+                       </div>
+                     </div>
+                   )}
                  </div>
-                 <div className="flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
-                   <div className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Review status</div>
-                   <button onClick={() => setExpenseReviewFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReviewFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>All</button>
-                   <button onClick={() => setExpenseReviewFilter('new')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReviewFilter === 'new' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>New</button>
-                   <button onClick={() => setExpenseReviewFilter('reviewed')} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${expenseReviewFilter === 'reviewed' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>Reviewed</button>
-                 </div>
-               </div>
-             )}
+               );
+             })()}
 
         {(currentPage === Page.AllTransactions || currentPage === Page.Ledger) && (
                <div className="flex bg-slate-200 dark:bg-slate-900 p-1 rounded-lg mb-4">
