@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.2.0"; // v37.2.0: readable type scale — 12px floor, small sizes lifted
+const CUSTOMER_VERSION = "37.2.1"; // v37.2.1: install dialog button visible; shows immediately on accept
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1079,7 +1079,10 @@ export default function App() {
     if (!deferredInstallPrompt) return;
     try {
       await deferredInstallPrompt.prompt();
-      await deferredInstallPrompt.userChoice;
+      const choice = await deferredInstallPrompt.userChoice;
+      if (choice?.outcome === 'accepted') {
+        setJustInstalled(true);
+      }
     } catch {
       // ignore user dismissal / browser differences
     } finally {
@@ -7115,7 +7118,8 @@ html, body, #root {
             </p>
             <button
               onClick={() => setJustInstalled(false)}
-              className="w-full rounded-lg bg-slate-900 py-3 font-bold text-white transition-colors hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+              className="w-full rounded-lg bg-emerald-600 py-3 font-bold text-white transition-colors hover:bg-emerald-700"
+              style={{ backgroundColor: '#059669', color: '#ffffff' }}
             >
               Got it
             </button>
