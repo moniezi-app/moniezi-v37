@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.2.1"; // v37.2.1: install dialog button visible; shows immediately on accept
+const CUSTOMER_VERSION = "37.3.0"; // v37.3.0: Plus Jakarta Sans; lighter weights; install guidance now shows
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1057,22 +1057,6 @@ export default function App() {
       setIsRunningStandalone(false);
       return false;
     }
-  }, []);
-
-  /**
-   * A web page cannot close its own tab or launch another app — the browser
-   * forbids both. So when installation completes we say plainly what to do next,
-   * rather than leaving the customer looking at a browser tab wondering whether
-   * anything happened.
-   */
-  useEffect(() => {
-    const onInstalled = () => {
-      setJustInstalled(true);
-      setShowDeferredInstallCta(false);
-      setDeferredInstallPrompt(null);
-    };
-    window.addEventListener('appinstalled', onInstalled);
-    return () => window.removeEventListener('appinstalled', onInstalled);
   }, []);
 
   const triggerDeferredInstallPrompt = useCallback(async () => {
@@ -1861,8 +1845,11 @@ export default function App() {
     const onAppInstalled = () => {
       setDeferredInstallPrompt(null);
       setShowDeferredInstallCta(false);
-      setIsRunningStandalone(true);
-      showToast('Installed. Open MONIEZI from your Home Screen.', 'success');
+      // Deliberately NOT setIsRunningStandalone(true). Installing does not turn
+      // this browser tab into the installed app — the customer is still looking
+      // at Chrome. Claiming otherwise suppressed the guidance telling them to
+      // close the tab. Real standalone detection handles this on its own.
+      setJustInstalled(true);
     };
 
     const onVisibility = () => evaluateStandaloneMode();

@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Outfit Variable", "Outfit", "system-ui", "-apple-system", "sans-serif"],
-        brand: ["Outfit Variable", "Outfit", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Plus Jakarta Sans Variable", "Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
+        brand: ["Plus Jakarta Sans Variable", "Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
       },
       colors: {
         slatebg: "#ffffff",

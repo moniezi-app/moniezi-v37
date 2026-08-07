@@ -420,12 +420,12 @@ html.theme-light .license-gate [class*="border-slate-"] {
 }
 
 /* ---------------------------------------------------------------------------
-   Outfit Variable, bundled with the app (@fontsource-variable/outfit).
+   Plus Jakarta Sans Variable, bundled with the app.
    Self-hosted deliberately: a Google Fonts link would make the app fetch a file
    from Google's servers on every load, which contradicts the privacy claim.
    --------------------------------------------------------------------------- */
 html, body, #root {
-  font-family: "Outfit Variable", "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 /* Money should line up in columns. Tabular figures give every digit the same
@@ -436,9 +436,7 @@ body {
 
 
 /* ---------------------------------------------------------------------------
-   Outfit has a shorter x-height than Roboto, so it reads about a point smaller
-   at the same pixel size. Nudging the root size up 6% restores the old optical
-   size. Tailwind sizing and spacing are rem-based, so type and layout scale
+   A small root-size nudge so rem-based spacing scales with the type. Tailwind sizing and spacing are rem-based, so type and layout scale
    together rather than type growing inside unchanged boxes.
    --------------------------------------------------------------------------- */
 html {
