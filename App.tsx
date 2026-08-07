@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.6.0"; // v37.6.0: welcome screen rebuilt as a glass panel matching the install gate
+const CUSTOMER_VERSION = "37.6.1"; // v37.6.1: welcome panel flips after the demo; translucent stat panels
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1033,6 +1033,22 @@ export default function App() {
   // environments, some desktops). Without it, a paying customer could be unable
   // to open the app at all.
   const [installGateDismissed, setInstallGateDismissed] = useState(false);
+
+  /**
+   * Whether this device has already loaded the sample data at least once.
+   *
+   * Kept in its own localStorage key rather than in settings, because removing
+   * sample data runs performReset() which wipes settings — which would erase the
+   * flag at precisely the moment it becomes relevant.
+   */
+  const [hasTriedSampleData, setHasTriedSampleData] = useState<boolean>(() => {
+    try { return localStorage.getItem('moniezi_sample_tried_v1') === '1'; } catch { return false; }
+  });
+
+  const markSampleDataTried = useCallback(() => {
+    try { localStorage.setItem('moniezi_sample_tried_v1', '1'); } catch { /* ignore */ }
+    setHasTriedSampleData(true);
+  }, []);
   const [showIosInstallCta, setShowIosInstallCta] = useState(false);
   const [showIosInstallHelp, setShowIosInstallHelp] = useState(false);
   const [isRunningStandalone, setIsRunningStandalone] = useState(false);
@@ -3862,6 +3878,7 @@ const demoMileageTrips: MileageTrip[] = [
 
   const handleLoadSampleData = async () => {
     await handleSeedDemoData();
+    markSampleDataTried();
     setShowMainMenu(false);
     setCurrentPage(Page.Dashboard);
     showToast("Sample data loaded. Remove it any time from the banner at the top.", "success");
@@ -7312,18 +7329,23 @@ html, body, #root {
             <div className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${theme === 'dark'
               ? 'border-sky-300/25 bg-gradient-to-br from-sky-500/20 to-blue-600/10'
               : 'border-sky-200/90 bg-gradient-to-br from-sky-100 to-blue-50 shadow-[0_8px_20px_rgba(59,130,246,0.12)]'}`}>
-              <PlayCircle size={28} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} strokeWidth={2} />
+              {hasTriedSampleData
+                ? <Plus size={30} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} strokeWidth={2.5} />
+                : <PlayCircle size={28} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} strokeWidth={2} />}
             </div>
 
             <div className={`text-center text-2xl font-extrabold leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              See it filled in first
+              {hasTriedSampleData ? 'Now make it yours' : 'See it filled in first'}
             </div>
             <p className={`mx-auto mt-2.5 max-w-[34ch] text-center text-[14px] leading-6 ${theme === 'dark' ? 'text-slate-200/90' : 'text-slate-800'}`}>
-              Load a complete example business, look around, then clear it out and
-              start your own. Nothing to undo.
+              {hasTriedSampleData
+                ? 'The example is cleared. Record a job, an expense, a mile or an invoice — whatever you did today.'
+                : 'Load a complete example business, look around, then clear it out and start your own. Nothing to undo.'}
             </p>
 
-            {/* Real counts, read from the sample data itself. */}
+            {/* Real counts, read from the sample data itself. Only shown while
+                the demo is still being offered as the main action. */}
+            {!hasTriedSampleData && (
             <div className="mt-5 flex gap-2">
               {[
                 { value: sampleDataCounts.transactions, label: 'RECORDS' },
@@ -7333,7 +7355,7 @@ html, body, #root {
                 <div
                   key={stat.label}
                   className="flex-1 rounded-2xl px-1.5 py-2.5 text-center"
-                  style={{ backgroundColor: '#047857', border: '1px solid rgba(255,255,255,0.18)' }}
+                  style={{ backgroundColor: 'rgba(4,120,87,0.70)', border: '1px solid rgba(255,255,255,0.18)' }}
                 >
                   <div className="font-extrabold" style={{ color: '#ffffff', fontSize: '17px' }}>{stat.value}</div>
                   <div className="text-[10px] font-bold tracking-[0.05em]" style={{ color: 'rgba(255,255,255,0.88)' }}>
@@ -7342,19 +7364,23 @@ html, body, #root {
                 </div>
               ))}
             </div>
+            )}
 
+            {/* Once the demo has been seen, the actions swap. Offering "load the
+                example" as the main button to someone who just removed it is the
+                one thing they are certain not to want. */}
             <button
-              onClick={handleLoadSampleData}
+              onClick={hasTriedSampleData ? () => setShowQuickAddMenu(true) : handleLoadSampleData}
               className="mt-5 w-full rounded-xl bg-amber-500 px-5 py-4 text-center text-[16px] font-bold text-white shadow-lg shadow-amber-950/30 transition-colors hover:bg-amber-400"
             >
-              Load the example
+              {hasTriedSampleData ? 'Record my first entry' : 'Load the example'}
             </button>
 
             <button
-              onClick={() => setShowQuickAddMenu(true)}
+              onClick={hasTriedSampleData ? handleLoadSampleData : () => setShowQuickAddMenu(true)}
               className={`mt-3.5 w-full py-2 text-center text-[13px] font-semibold underline underline-offset-4 transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
             >
-              Skip — record my first entry
+              {hasTriedSampleData ? 'Show the example again' : 'Skip — record my first entry'}
             </button>
           </div>
         </div>
