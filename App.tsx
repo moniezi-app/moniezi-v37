@@ -16,7 +16,7 @@ import {
   ArrowLeft,
   ArrowUp,
   BrainCircuit, 
-  Sparkles, 
+  PlayCircle, 
   Receipt, 
   Wallet, 
   BarChart3, 
@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.3.3"; // v37.3.3: welcome cards — filled blue primary, violet secondary
+const CUSTOMER_VERSION = "37.4.0"; // v37.4.0: demo-first welcome cards in orange; AI sparkles icon removed
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -7224,7 +7224,7 @@ html, body, #root {
           nobody mistakes them for real figures and the exit is always one tap. */}
       {isDemoData && (
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
-          <Sparkles size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
+          <PlayCircle size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="min-w-0 flex-1">
             <div className="text-sm font-bold text-amber-900 dark:text-amber-100">Sample data</div>
             <div className="text-xs font-medium text-amber-800/80 dark:text-amber-200/70">
@@ -7250,58 +7250,58 @@ html, body, #root {
             Nothing recorded yet. Where would you like to start?
           </p>
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {/* Primary: filled, so it reads as the action rather than a box.
-                Blue matches the FAB, the Net Profit card and the active nav. */}
-            <button
-              onClick={() => setShowQuickAddMenu(true)}
-              className="group flex items-center gap-3.5 rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                boxShadow: '0 10px 26px -10px rgba(37,99,235,0.85)',
-              }}
-            >
-              <span
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.22)' }}
-              >
-                <Plus size={22} strokeWidth={2.5} style={{ color: '#ffffff' }} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff' }}>
-                  Record my first entry
-                </span>
-                <span className="mt-0.5 block text-xs" style={{ color: 'rgba(255,255,255,0.82)' }}>
-                  Income, expense, invoice, mileage — you choose
-                </span>
-              </span>
-              <ChevronRight size={20} className="shrink-0" style={{ color: 'rgba(255,255,255,0.85)' }} />
-            </button>
-
-            {/* Secondary: violet tint — clearly the quieter choice, but warm
-                rather than dead grey. */}
+            {/* Sample data leads. Orange is the only warm colour on an otherwise
+                blue screen, so it wins on contrast without the other card being
+                weakened — and it matches the sample-data banner it produces. */}
             <button
               onClick={handleLoadSampleData}
-              className="group flex items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors active:scale-[0.98]"
+              className="flex items-center gap-4 rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
               style={{
-                borderColor: 'rgba(139,92,246,0.45)',
-                background: 'rgba(139,92,246,0.10)',
+                background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
+                boxShadow: '0 12px 28px -10px rgba(234,88,12,0.9)',
               }}
             >
               <span
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: 'rgba(139,92,246,0.20)' }}
+                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl"
+                style={{ background: 'rgba(255,255,255,0.24)' }}
               >
-                <Sparkles size={20} strokeWidth={2} style={{ color: '#a78bfa' }} />
+                <PlayCircle size={30} strokeWidth={2.2} style={{ color: '#ffffff' }} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-bold tracking-tight text-violet-900 dark:text-violet-100">
+                <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff', fontSize: '17px' }}>
                   Show me an example first
                 </span>
-                <span className="mt-0.5 block text-xs text-violet-700 dark:text-violet-300/80">
+                <span className="mt-0.5 block text-xs" style={{ color: 'rgba(255,255,255,0.88)' }}>
                   A filled-in business you can remove any time
                 </span>
               </span>
-              <ChevronRight size={20} className="shrink-0 text-violet-500 dark:text-violet-400/70" />
+              <ChevronRight size={22} className="shrink-0" style={{ color: 'rgba(255,255,255,0.9)' }} />
+            </button>
+
+            {/* Equally solid, just cooler. Not a lesser option — a different one. */}
+            <button
+              onClick={() => setShowQuickAddMenu(true)}
+              className="flex items-center gap-4 rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                boxShadow: '0 12px 28px -10px rgba(37,99,235,0.85)',
+              }}
+            >
+              <span
+                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl"
+                style={{ background: 'rgba(255,255,255,0.24)' }}
+              >
+                <Plus size={32} strokeWidth={3} style={{ color: '#ffffff' }} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff', fontSize: '17px' }}>
+                  Record my first entry
+                </span>
+                <span className="mt-0.5 block text-xs" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                  Income, expense, invoice, mileage — you choose
+                </span>
+              </span>
+              <ChevronRight size={22} className="shrink-0" style={{ color: 'rgba(255,255,255,0.9)' }} />
             </button>
           </div>
         </div>
@@ -7586,7 +7586,7 @@ html, body, #root {
                 <button onClick={() => setCurrentPage(Page.AllTransactions)} className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase">See all</button>
               </div>
               <div className="space-y-3">
-                {transactions.length === 0 ? <EmptyState icon={<Sparkles size={24} />} title="No activity yet" subtitle="Your latest transactions will appear here once you start recording." action={handleOpenQuickAdd} actionLabel="Add Transaction" /> :
+                {transactions.length === 0 ? <EmptyState icon={<ClipboardList size={24} />} title="No activity yet" subtitle="Your latest transactions will appear here once you start recording." action={handleOpenQuickAdd} actionLabel="Add Transaction" /> :
                   transactions.slice().sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5).map(t => (
                     <div key={t.id} className="group flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-blue-500/30 hover:shadow-lg transition-all cursor-pointer shadow-sm relative z-10" onClick={() => handleEditItem(t)}>
                       <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -10446,7 +10446,7 @@ html, body, #root {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       {(isAppEmpty || isDemoData) && (
                       <button onClick={handleLoadSampleData} className="py-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 rounded-lg text-sm font-bold uppercase tracking-widest shadow-lg transition-all flex flex-col items-center justify-center gap-3 active:scale-95">
-                        {seedSuccess ? <CheckCircle size={24} /> : <Sparkles size={24} />}
+                        {seedSuccess ? <CheckCircle size={24} /> : <PlayCircle size={24} />}
                         <span>{seedSuccess ? 'Sample Data Loaded' : 'Load Sample Data'}</span>
                       </button>
                       )}
@@ -10861,7 +10861,7 @@ html, body, #root {
                     className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     <span className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                      <Sparkles size={18} />
+                      <PlayCircle size={18} />
                     </span>
                     <span className="min-w-0">
                       Try sample data
@@ -11476,7 +11476,7 @@ html, body, #root {
           <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl p-6 shadow-2xl border border-blue-500/20">
             <div className="flex items-center gap-4 mb-4 text-blue-600 dark:text-blue-400">
               <div className="bg-blue-100 dark:bg-blue-500/10 p-3 rounded-full">
-                <Sparkles size={24} strokeWidth={2} />
+                <ClipboardList size={24} strokeWidth={2} />
               </div>
               <h3 className="text-lg sm:text-xl font-bold">Save as Template?</h3>
             </div>
