@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.5.0"; // v37.5.0: install-first gate before the welcome cards
+const CUSTOMER_VERSION = "37.6.0"; // v37.6.0: welcome screen rebuilt as a glass panel matching the install gate
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -7299,98 +7299,62 @@ html, body, #root {
       )}
 
       {/* First run. Two honest choices — we never force anyone through the demo. */}
+      {/* First run. Same anatomy as the install gate the customer just came
+          through: dark glass panel, one bright amber action, and a quiet link
+          for the alternative. The orange is the button, not the whole card. */}
       {isAppEmpty && !isDemoData && !installGateActive && currentPage === Page.Dashboard && (
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h3 className="font-brand text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Welcome to MONIEZI
-          </h3>
-          <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
-            Nothing recorded yet. Where would you like to start?
-          </p>
-          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {/* Sample data leads. Orange is the only warm colour on an otherwise
-                blue screen, so it wins on contrast — and it matches the banner
-                it produces. Inner panels are solid emerald (the app's income
-                green) so white text sits on dark ground rather than on orange.
-                Counts come from the sample data itself, never hardcoded. */}
-            <button
-              onClick={handleLoadSampleData}
-              className="rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(150deg, #F59E0B 0%, #EA580C 55%, #9A3412 100%)',
-                boxShadow: '0 14px 34px -12px rgba(154,88,18,0.95)',
-              }}
-            >
-              <span className="flex items-center gap-3.5">
-                <span
-                  className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-2xl"
+        <div className={`relative mb-6 overflow-hidden rounded-[26px] border backdrop-blur-xl ${theme === 'dark'
+          ? 'border-sky-300/35 bg-gradient-to-br from-slate-800/98 via-slate-800/96 to-blue-950/92 shadow-[0_18px_48px_rgba(2,6,23,0.52)] ring-1 ring-white/8'
+          : 'border-sky-300/65 bg-gradient-to-br from-slate-50/98 via-white/98 to-sky-50/96 shadow-[0_18px_48px_rgba(15,23,42,0.16)] ring-1 ring-sky-200/70'}`}>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.20),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(125,211,252,0.10),transparent_32%)]" />
+
+          <div className="relative px-6 py-7">
+            <div className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${theme === 'dark'
+              ? 'border-sky-300/25 bg-gradient-to-br from-sky-500/20 to-blue-600/10'
+              : 'border-sky-200/90 bg-gradient-to-br from-sky-100 to-blue-50 shadow-[0_8px_20px_rgba(59,130,246,0.12)]'}`}>
+              <PlayCircle size={28} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} strokeWidth={2} />
+            </div>
+
+            <div className={`text-center text-2xl font-extrabold leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              See it filled in first
+            </div>
+            <p className={`mx-auto mt-2.5 max-w-[34ch] text-center text-[14px] leading-6 ${theme === 'dark' ? 'text-slate-200/90' : 'text-slate-800'}`}>
+              Load a complete example business, look around, then clear it out and
+              start your own. Nothing to undo.
+            </p>
+
+            {/* Real counts, read from the sample data itself. */}
+            <div className="mt-5 flex gap-2">
+              {[
+                { value: sampleDataCounts.transactions, label: 'RECORDS' },
+                { value: sampleDataCounts.invoices, label: 'INVOICES' },
+                { value: sampleDataCounts.clients, label: 'CLIENTS' },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex-1 rounded-2xl px-1.5 py-2.5 text-center"
                   style={{ backgroundColor: '#047857', border: '1px solid rgba(255,255,255,0.18)' }}
                 >
-                  <PlayCircle size={28} strokeWidth={2.2} style={{ color: '#ffffff' }} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span
-                    className="mb-1.5 inline-block rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[0.11em]"
-                    style={{ backgroundColor: '#047857', color: '#ffffff', border: '1px solid rgba(255,255,255,0.18)' }}
-                  >
-                    START HERE
-                  </span>
-                  <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff', fontSize: '17px' }}>
-                    Show me an example
-                  </span>
-                </span>
-                <ChevronRight size={22} className="shrink-0" style={{ color: 'rgba(255,255,255,0.92)' }} />
-              </span>
+                  <div className="font-extrabold" style={{ color: '#ffffff', fontSize: '17px' }}>{stat.value}</div>
+                  <div className="text-[10px] font-bold tracking-[0.05em]" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-              <span className="mt-3 flex gap-2">
-                {[
-                  { value: sampleDataCounts.transactions, label: 'RECORDS' },
-                  { value: sampleDataCounts.invoices, label: 'INVOICES' },
-                  { value: sampleDataCounts.clients, label: 'CLIENTS' },
-                ].map((stat) => (
-                  <span
-                    key={stat.label}
-                    className="flex-1 rounded-xl px-1.5 py-2 text-center"
-                    style={{ backgroundColor: '#047857', border: '1px solid rgba(255,255,255,0.18)' }}
-                  >
-                    <span className="block font-extrabold" style={{ color: '#ffffff', fontSize: '16px' }}>
-                      {stat.value}
-                    </span>
-                    <span
-                      className="block text-[10px] font-bold tracking-[0.05em]"
-                      style={{ color: 'rgba(255,255,255,0.88)' }}
-                    >
-                      {stat.label}
-                    </span>
-                  </span>
-                ))}
-              </span>
+            <button
+              onClick={handleLoadSampleData}
+              className="mt-5 w-full rounded-xl bg-amber-500 px-5 py-4 text-center text-[16px] font-bold text-white shadow-lg shadow-amber-950/30 transition-colors hover:bg-amber-400"
+            >
+              Load the example
             </button>
 
-            {/* Equally solid, just cooler. Not a lesser option — a different one. */}
             <button
               onClick={() => setShowQuickAddMenu(true)}
-              className="flex items-center gap-4 rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                boxShadow: '0 12px 28px -10px rgba(37,99,235,0.85)',
-              }}
+              className={`mt-3.5 w-full py-2 text-center text-[13px] font-semibold underline underline-offset-4 transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
             >
-              <span
-                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl"
-                style={{ background: 'rgba(255,255,255,0.24)' }}
-              >
-                <Plus size={32} strokeWidth={3} style={{ color: '#ffffff' }} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff', fontSize: '17px' }}>
-                  Record my first entry
-                </span>
-                <span className="mt-0.5 block text-xs" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                  Income, expense, invoice, mileage — you choose
-                </span>
-              </span>
-              <ChevronRight size={22} className="shrink-0" style={{ color: 'rgba(255,255,255,0.9)' }} />
+              Skip — record my first entry
             </button>
           </div>
         </div>
