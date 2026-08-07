@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.4.0"; // v37.4.0: demo-first welcome cards in orange; AI sparkles icon removed
+const CUSTOMER_VERSION = "37.4.1"; // v37.4.1: sample card — emerald panels, live counts from the demo data
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -3809,6 +3809,24 @@ const demoMileageTrips: MileageTrip[] = [
    * only ever offered while there is nothing to destroy. This single condition
    * is the safety check: no empty app, no button.
    */
+  /**
+   * Real counts pulled from the sample data itself, so the welcome card can
+   * never advertise numbers that differ from what loading actually produces.
+   * Only computed while the app is empty, which is the only time it renders.
+   */
+  const sampleDataCounts = useMemo(() => {
+    try {
+      const demo: any = getFreshDemoData();
+      return {
+        transactions: (demo?.transactions || []).length,
+        invoices: (demo?.invoices || []).length,
+        clients: (demo?.clients || []).length,
+      };
+    } catch {
+      return { transactions: 0, invoices: 0, clients: 0 };
+    }
+  }, []);
+
   const isAppEmpty =
     transactions.length === 0 &&
     invoices.length === 0 &&
@@ -7251,31 +7269,62 @@ html, body, #root {
           </p>
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Sample data leads. Orange is the only warm colour on an otherwise
-                blue screen, so it wins on contrast without the other card being
-                weakened — and it matches the sample-data banner it produces. */}
+                blue screen, so it wins on contrast — and it matches the banner
+                it produces. Inner panels are solid emerald (the app's income
+                green) so white text sits on dark ground rather than on orange.
+                Counts come from the sample data itself, never hardcoded. */}
             <button
               onClick={handleLoadSampleData}
-              className="flex items-center gap-4 rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
+              className="rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
               style={{
-                background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
-                boxShadow: '0 12px 28px -10px rgba(234,88,12,0.9)',
+                background: 'linear-gradient(150deg, #F59E0B 0%, #EA580C 55%, #9A3412 100%)',
+                boxShadow: '0 14px 34px -12px rgba(154,88,18,0.95)',
               }}
             >
-              <span
-                className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl"
-                style={{ background: 'rgba(255,255,255,0.24)' }}
-              >
-                <PlayCircle size={30} strokeWidth={2.2} style={{ color: '#ffffff' }} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff', fontSize: '17px' }}>
-                  Show me an example first
+              <span className="flex items-center gap-3.5">
+                <span
+                  className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: '#047857', border: '1px solid rgba(255,255,255,0.18)' }}
+                >
+                  <PlayCircle size={28} strokeWidth={2.2} style={{ color: '#ffffff' }} />
                 </span>
-                <span className="mt-0.5 block text-xs" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                  A filled-in business you can remove any time
+                <span className="min-w-0 flex-1">
+                  <span
+                    className="mb-1.5 inline-block rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[0.11em]"
+                    style={{ backgroundColor: '#047857', color: '#ffffff', border: '1px solid rgba(255,255,255,0.18)' }}
+                  >
+                    START HERE
+                  </span>
+                  <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff', fontSize: '17px' }}>
+                    Show me an example
+                  </span>
                 </span>
+                <ChevronRight size={22} className="shrink-0" style={{ color: 'rgba(255,255,255,0.92)' }} />
               </span>
-              <ChevronRight size={22} className="shrink-0" style={{ color: 'rgba(255,255,255,0.9)' }} />
+
+              <span className="mt-3 flex gap-2">
+                {[
+                  { value: sampleDataCounts.transactions, label: 'RECORDS' },
+                  { value: sampleDataCounts.invoices, label: 'INVOICES' },
+                  { value: sampleDataCounts.clients, label: 'CLIENTS' },
+                ].map((stat) => (
+                  <span
+                    key={stat.label}
+                    className="flex-1 rounded-xl px-1.5 py-2 text-center"
+                    style={{ backgroundColor: '#047857', border: '1px solid rgba(255,255,255,0.18)' }}
+                  >
+                    <span className="block font-extrabold" style={{ color: '#ffffff', fontSize: '16px' }}>
+                      {stat.value}
+                    </span>
+                    <span
+                      className="block text-[10px] font-bold tracking-[0.05em]"
+                      style={{ color: 'rgba(255,255,255,0.88)' }}
+                    >
+                      {stat.label}
+                    </span>
+                  </span>
+                ))}
+              </span>
             </button>
 
             {/* Equally solid, just cooler. Not a lesser option — a different one. */}
