@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.7.1"; // v37.7.1: PDF fixes — note text clipped by box border, footer collision
+const CUSTOMER_VERSION = "37.7.2"; // v37.7.2: PDF values fit their boxes; detail rows measured once, with margin
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
