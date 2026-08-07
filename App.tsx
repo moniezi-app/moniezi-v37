@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.4.1"; // v37.4.1: sample card — emerald panels, live counts from the demo data
+const CUSTOMER_VERSION = "37.5.0"; // v37.5.0: install-first gate before the welcome cards
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1029,6 +1029,10 @@ export default function App() {
   useKeyboardEditingState({ onEditingChange: setIsKeyboardEditing });
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
   const [showDeferredInstallCta, setShowDeferredInstallCta] = useState(false);
+  // Escape hatch for browsers that cannot install (Firefox Android, locked-down
+  // environments, some desktops). Without it, a paying customer could be unable
+  // to open the app at all.
+  const [installGateDismissed, setInstallGateDismissed] = useState(false);
   const [showIosInstallCta, setShowIosInstallCta] = useState(false);
   const [showIosInstallHelp, setShowIosInstallHelp] = useState(false);
   const [isRunningStandalone, setIsRunningStandalone] = useState(false);
@@ -3827,6 +3831,19 @@ const demoMileageTrips: MileageTrip[] = [
     }
   }, []);
 
+  /**
+   * The install prompt takes the whole screen when it applies, so nobody starts
+   * entering records in a browser tab and then loses them.
+   *
+   * This matters most on iPhone: a home-screen app does NOT share storage with
+   * Safari, so anything created in the browser vanishes after installing.
+   */
+  const installGateActive =
+    !isRunningStandalone &&
+    !installGateDismissed &&
+    isLicenseValid === true &&
+    ((showDeferredInstallCta && !!deferredInstallPrompt) || showIosInstallCta);
+
   const isAppEmpty =
     transactions.length === 0 &&
     invoices.length === 0 &&
@@ -6605,7 +6622,7 @@ html, body, #root {
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
-      {((showDeferredInstallCta && deferredInstallPrompt) || showIosInstallCta) && !isRunningStandalone && (() => {
+      {installGateActive && (() => {
         const iosInstallContext = getIosInstallContext();
         const isIosInstallBanner = showIosInstallCta && iosInstallContext.isIosDevice && !deferredInstallPrompt;
         const bannerCopy = isIosInstallBanner
@@ -6615,23 +6632,46 @@ html, body, #root {
           : 'You can install the app now for faster access from your phone home screen.';
 
         return (
-          <div className="absolute left-3 right-3 top-[max(76px,calc(env(safe-area-inset-top,0px)+72px))] z-[70] animate-in slide-in-from-top-2 duration-200">
+          <div className="fixed inset-0 z-[95] flex items-center justify-center overflow-y-auto bg-slate-950/80 px-4 py-8 backdrop-blur-sm animate-in fade-in duration-200 modal-overlay">
+            <div className="w-full max-w-md">
             <div className={`rounded-[26px] border backdrop-blur-xl overflow-hidden ${theme === 'dark' ? 'border-sky-300/35 bg-gradient-to-br from-slate-800/98 via-slate-800/96 to-blue-950/92 shadow-[0_18px_48px_rgba(2,6,23,0.52)] ring-1 ring-white/8' : 'border-sky-300/65 bg-gradient-to-br from-slate-50/98 via-white/98 to-sky-50/96 shadow-[0_18px_48px_rgba(15,23,42,0.16)] ring-1 ring-sky-200/70'}`}>
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.20),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(125,211,252,0.10),transparent_32%)]" />
-              <div className="relative px-4 py-4">
-                <div className="flex items-start gap-3.5">
-                  <div className={`w-11 h-11 shrink-0 rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center ${theme === 'dark' ? 'bg-gradient-to-br from-sky-500/20 to-blue-600/10 border-sky-300/25' : 'bg-gradient-to-br from-sky-100 to-blue-50 border-sky-200/90 shadow-[0_8px_20px_rgba(59,130,246,0.12)]'}`}>
-                    {isIosInstallBanner ? <Share2 size={19} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} /> : <Download size={19} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className={`text-[15px] font-bold leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Install MONIEZI</div>
-                    <p className={`text-[13px] leading-6 mt-1 max-w-[38ch] ${theme === 'dark' ? 'text-slate-200/90' : 'text-slate-800'}`}>{bannerCopy}</p>
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <button onClick={isIosInstallBanner ? openIosInstallHelp : triggerDeferredInstallPrompt} className="min-w-[196px] px-5 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-[15px] font-bold shadow-lg shadow-amber-950/30 transition-colors text-center">Install MONIEZI</button>
-                    </div>
-                  </div>
+              <div className="relative px-6 py-7">
+                <div className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${theme === 'dark' ? 'bg-gradient-to-br from-sky-500/20 to-blue-600/10 border-sky-300/25' : 'bg-gradient-to-br from-sky-100 to-blue-50 border-sky-200/90 shadow-[0_8px_20px_rgba(59,130,246,0.12)]'}`}>
+                  {isIosInstallBanner
+                    ? <Share2 size={28} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} />
+                    : <Download size={28} className={theme === 'dark' ? 'text-sky-200' : 'text-sky-500'} />}
                 </div>
+
+                <div className={`text-center text-2xl font-extrabold leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  Install MONIEZI first
+                </div>
+                <p className={`mx-auto mt-2.5 max-w-[34ch] text-center text-[14px] leading-6 ${theme === 'dark' ? 'text-slate-200/90' : 'text-slate-800'}`}>
+                  {bannerCopy}
+                </p>
+
+                <div className={`mt-5 rounded-2xl border px-4 py-3.5 ${theme === 'dark' ? 'border-amber-400/25 bg-amber-500/10' : 'border-amber-300/70 bg-amber-50'}`}>
+                  <p className={`text-[13px] leading-6 ${theme === 'dark' ? 'text-amber-100/90' : 'text-amber-900'}`}>
+                    <span className="font-bold">Do this before you enter anything.</span> Records you
+                    create in this browser tab may not appear in the installed app.
+                  </p>
+                </div>
+
+                <button
+                  onClick={isIosInstallBanner ? openIosInstallHelp : triggerDeferredInstallPrompt}
+                  className="mt-5 w-full rounded-xl bg-amber-500 px-5 py-4 text-center text-[16px] font-bold text-white shadow-lg shadow-amber-950/30 transition-colors hover:bg-amber-400"
+                >
+                  {isIosInstallBanner ? 'Show me how' : 'Install MONIEZI'}
+                </button>
+
+                <button
+                  onClick={() => setInstallGateDismissed(true)}
+                  className={`mt-3.5 w-full py-2 text-center text-[13px] font-semibold underline underline-offset-4 transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
+                >
+                  Continue in this browser instead
+                </button>
               </div>
+            </div>
             </div>
           </div>
         );
@@ -7259,7 +7299,7 @@ html, body, #root {
       )}
 
       {/* First run. Two honest choices — we never force anyone through the demo. */}
-      {isAppEmpty && !isDemoData && currentPage === Page.Dashboard && (
+      {isAppEmpty && !isDemoData && !installGateActive && currentPage === Page.Dashboard && (
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="font-brand text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             Welcome to MONIEZI
