@@ -720,35 +720,35 @@ const PeriodSelector: React.FC<{
           <ChevronDown size={13} className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
         </div>
 
-        {/* Arrows sit either side of the date they change, not off at the edge. */}
-        <div className="flex items-center justify-end gap-1 min-w-0 flex-1">
-          <button
-            onClick={() => navigateDate(-1)}
-            disabled={!steppable}
-            aria-label="Previous period"
-            className={`shrink-0 p-1.5 rounded-lg transition-colors ${steppable
-              ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-              : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
-          >
-            <ChevronLeft size={20} />
-          </button>
+        {/* Both arrows are pinned. Previously they were grouped with the label and
+            pushed right, so the left arrow slid about as the date text changed
+            width ("August" vs "May"). Now only the text inside moves. */}
+        <button
+          onClick={() => navigateDate(-1)}
+          disabled={!steppable}
+          aria-label="Previous period"
+          className={`shrink-0 p-1.5 rounded-lg transition-colors ${steppable
+            ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
+        >
+          <ChevronLeft size={20} />
+        </button>
 
-          <div className="flex items-center justify-center gap-1.5 min-w-0 text-center font-brand font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">
-            <Calendar size={15} className="text-blue-500 shrink-0" />
-            <span className="truncate">{getLabel()}</span>
-          </div>
-
-          <button
-            onClick={() => navigateDate(1)}
-            disabled={!steppable}
-            aria-label="Next period"
-            className={`shrink-0 p-1.5 rounded-lg transition-colors ${steppable
-              ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-              : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
-          >
-            <ChevronRight size={20} />
-          </button>
+        <div className="flex flex-1 items-center justify-center gap-1.5 min-w-0 text-center font-brand font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">
+          <Calendar size={15} className="text-blue-500 shrink-0" />
+          <span className="truncate">{getLabel()}</span>
         </div>
+
+        <button
+          onClick={() => navigateDate(1)}
+          disabled={!steppable}
+          aria-label="Next period"
+          className={`shrink-0 p-1.5 rounded-lg transition-colors ${steppable
+            ? 'text-slate-500 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            : 'text-slate-300 dark:text-slate-700 cursor-default'}`}
+        >
+          <ChevronRight size={20} />
+        </button>
       </div>
     </div>
   );
@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.3.0"; // v37.3.0: Plus Jakarta Sans; lighter weights; install guidance now shows
+const CUSTOMER_VERSION = "37.3.1"; // v37.3.1: period arrows pinned so they no longer shift with the label
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
