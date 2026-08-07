@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.3.2"; // v37.3.2: install dialog attempts to close the tab, with honest fallback
+const CUSTOMER_VERSION = "37.3.3"; // v37.3.3: welcome cards — filled blue primary, violet secondary
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -7250,29 +7250,58 @@ html, body, #root {
             Nothing recorded yet. Where would you like to start?
           </p>
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Primary: filled, so it reads as the action rather than a box.
+                Blue matches the FAB, the Net Profit card and the active nav. */}
             <button
               onClick={() => setShowQuickAddMenu(true)}
-              className="flex items-start gap-3 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:border-blue-500 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:border-blue-500"
+              className="group flex items-center gap-3.5 rounded-2xl p-4 text-left transition-transform active:scale-[0.98]"
+              style={{
+                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                boxShadow: '0 10px 26px -10px rgba(37,99,235,0.85)',
+              }}
             >
-              <Plus size={20} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
-              <span className="min-w-0">
-                <span className="block font-bold text-slate-900 dark:text-white">Record my first entry</span>
-                <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: 'rgba(255,255,255,0.22)' }}
+              >
+                <Plus size={22} strokeWidth={2.5} style={{ color: '#ffffff' }} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-extrabold tracking-tight" style={{ color: '#ffffff' }}>
+                  Record my first entry
+                </span>
+                <span className="mt-0.5 block text-xs" style={{ color: 'rgba(255,255,255,0.82)' }}>
                   Income, expense, invoice, mileage — you choose
                 </span>
               </span>
+              <ChevronRight size={20} className="shrink-0" style={{ color: 'rgba(255,255,255,0.85)' }} />
             </button>
+
+            {/* Secondary: violet tint — clearly the quieter choice, but warm
+                rather than dead grey. */}
             <button
               onClick={handleLoadSampleData}
-              className="flex items-start gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-4 text-left transition-colors hover:border-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-400"
+              className="group flex items-center gap-3.5 rounded-2xl border-2 p-4 text-left transition-colors active:scale-[0.98]"
+              style={{
+                borderColor: 'rgba(139,92,246,0.45)',
+                background: 'rgba(139,92,246,0.10)',
+              }}
             >
-              <Sparkles size={20} className="mt-0.5 shrink-0 text-slate-600 dark:text-slate-300" strokeWidth={2} />
-              <span className="min-w-0">
-                <span className="block font-bold text-slate-900 dark:text-white">Show me an example first</span>
-                <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: 'rgba(139,92,246,0.20)' }}
+              >
+                <Sparkles size={20} strokeWidth={2} style={{ color: '#a78bfa' }} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold tracking-tight text-violet-900 dark:text-violet-100">
+                  Show me an example first
+                </span>
+                <span className="mt-0.5 block text-xs text-violet-700 dark:text-violet-300/80">
                   A filled-in business you can remove any time
                 </span>
               </span>
+              <ChevronRight size={20} className="shrink-0 text-violet-500 dark:text-violet-400/70" />
             </button>
           </div>
         </div>
