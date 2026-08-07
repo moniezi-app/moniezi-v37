@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.3.1"; // v37.3.1: period arrows pinned so they no longer shift with the label
+const CUSTOMER_VERSION = "37.3.2"; // v37.3.2: install dialog attempts to close the tab, with honest fallback
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1033,6 +1033,7 @@ export default function App() {
   const [showIosInstallHelp, setShowIosInstallHelp] = useState(false);
   const [isRunningStandalone, setIsRunningStandalone] = useState(false);
   const [justInstalled, setJustInstalled] = useState(false);
+  const [closeTabRefused, setCloseTabRefused] = useState(false);
 
   const getIosInstallContext = useCallback(() => {
     try {
@@ -7104,12 +7105,29 @@ html, body, #root {
               Your records are the same in both. The installed app just opens faster and works without the browser.
             </p>
             <button
-              onClick={() => setJustInstalled(false)}
+              onClick={() => {
+                // Browsers only let a script close a tab that a script opened.
+                // A customer arriving from a purchase link doesn't qualify, so
+                // this usually fails — but some browsers allow it when the tab
+                // has no history behind it, which is exactly that case. Try it,
+                // and if the tab is still here a moment later, say so rather
+                // than leaving the button looking broken.
+                try { window.close(); } catch { /* refused — expected */ }
+                window.setTimeout(() => {
+                  if (!window.closed) setCloseTabRefused(true);
+                }, 350);
+              }}
               className="w-full rounded-lg bg-emerald-600 py-3 font-bold text-white transition-colors hover:bg-emerald-700"
               style={{ backgroundColor: '#059669', color: '#ffffff' }}
             >
-              Got it
+              {closeTabRefused ? 'Close this tab yourself to finish' : 'Got it — close this tab'}
             </button>
+            {closeTabRefused && (
+              <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+                Your browser won&apos;t let a page close its own tab. Close it the
+                usual way, then open MONIEZI from your home screen.
+              </p>
+            )}
           </div>
         </div>
       )}
