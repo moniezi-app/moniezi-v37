@@ -321,6 +321,29 @@ const drawProgressRow = (
   page.drawRectangle({ x, y: yTop - 40, width: Math.max(24, width * Math.max(0, Math.min(1, value / 100))), height: 6, color: tone.bar });
 };
 
+/**
+ * The note used to be drawn at a fixed offset inside a fixed-height box, so a
+ * two-line note put its last baseline flush with the bottom border and the
+ * descenders crossed it. Height is now a MINIMUM: the box grows to fit the
+ * wrapped note plus a real bottom margin.
+ */
+const MINI_STAT_NOTE_SIZE = 6.8;
+const MINI_STAT_NOTE_GAP = 2.1;
+const MINI_STAT_NOTE_TOP = 55;
+const MINI_STAT_BOTTOM_PAD = 12;
+
+export const measureMiniStatHeight = (
+  note: string,
+  width: number,
+  fonts: FontSet,
+  minHeight = 72,
+) => {
+  const lines = splitLines(note, fonts.body, MINI_STAT_NOTE_SIZE, width - 24);
+  const lineHeight = MINI_STAT_NOTE_SIZE + MINI_STAT_NOTE_GAP;
+  const needed = MINI_STAT_NOTE_TOP + lines.length * lineHeight + MINI_STAT_BOTTOM_PAD;
+  return Math.max(minHeight, needed);
+};
+
 const drawMiniStat = (
   page: PDFPage,
   x: number,
@@ -330,8 +353,9 @@ const drawMiniStat = (
   value: string,
   note: string,
   fonts: FontSet,
-  height = 72,
+  minHeight = 72,
 ) => {
+  const height = measureMiniStatHeight(note, width, fonts, minHeight);
   page.drawRectangle({ x, y: yTop - height, width, height, color: COLORS.white, borderColor: COLORS.panelBorder, borderWidth: 1 });
   drawTrackedText(page, sanitizePdfText(label).toUpperCase(), {
     x: x + 12,
@@ -348,7 +372,8 @@ const drawMiniStat = (
     font: fonts.bold,
     color: COLORS.ink,
   });
-  drawTextBlock(page, note, x + 12, yTop - 55, width - 24, fonts.body, 6.8, COLORS.inkSoft, 2.1);
+  drawTextBlock(page, note, x + 12, yTop - MINI_STAT_NOTE_TOP, width - 24, fonts.body, MINI_STAT_NOTE_SIZE, COLORS.inkSoft, MINI_STAT_NOTE_GAP);
+  return height;
 };
 
 const drawTable = (
@@ -395,12 +420,32 @@ const drawTable = (
   });
 };
 
+/**
+ * Both halves used to be drawn on one line with no width check, so a long
+ * business name ran straight into the left-hand text ("...recordsAcme Creative
+ * Studio"). If they cannot both fit, the footer stacks onto two lines instead.
+ */
 const drawFooter = (page: PDFPage, textLeft: string, textRight: string, fonts: FontSet, pageLabel: string) => {
   drawRule(page, PAGE.marginBottom + 10);
-  page.drawText(sanitizePdfText(textLeft), { x: PAGE.marginX, y: FOOTER_Y, size: 8.5, font: fonts.body, color: COLORS.inkSoft });
+
+  const size = 8.5;
+  const left = sanitizePdfText(textLeft);
   const right = sanitizePdfText(`${textRight} · ${pageLabel}`);
-  const rightWidth = fonts.body.widthOfTextAtSize(right, 8.5);
-  page.drawText(right, { x: PAGE.width - PAGE.marginX - rightWidth, y: FOOTER_Y, size: 8.5, font: fonts.body, color: COLORS.inkSoft });
+  const leftWidth = fonts.body.widthOfTextAtSize(left, size);
+  const rightWidth = fonts.body.widthOfTextAtSize(right, size);
+  const available = PAGE.width - PAGE.marginX * 2;
+  const GAP = 14;
+
+  if (leftWidth + GAP + rightWidth <= available) {
+    page.drawText(left, { x: PAGE.marginX, y: FOOTER_Y, size, font: fonts.body, color: COLORS.inkSoft });
+    page.drawText(right, { x: PAGE.width - PAGE.marginX - rightWidth, y: FOOTER_Y, size, font: fonts.body, color: COLORS.inkSoft });
+    return;
+  }
+
+  // Two lines: identity above, document and page below, both left-aligned so
+  // they never meet in the middle.
+  page.drawText(left, { x: PAGE.marginX, y: FOOTER_Y + 10, size, font: fonts.body, color: COLORS.inkSoft });
+  page.drawText(right, { x: PAGE.marginX, y: FOOTER_Y, size, font: fonts.body, color: COLORS.inkSoft });
 };
 
 type TitleOptions = {
@@ -1254,10 +1299,13 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
 
   const statsTop = noteTop - noteHeight - 18;
   const statCardWidth = (CONTENT_WIDTH - 12) / 2;
-  drawMiniStat(page4, PAGE.marginX, statsTop, statCardWidth, 'Prepared by', preparedBy, 'Name shown for statement reference only. Data remains stored locally.', fonts, 64);
-  drawMiniStat(page4, PAGE.marginX + statCardWidth + 12, statsTop, statCardWidth, 'Generated', data.generatedAtLabel, 'Export timestamp for this statement package.', fonts, 64);
+  const statCardHeight = Math.max(
+    drawMiniStat(page4, PAGE.marginX, statsTop, statCardWidth, 'Prepared by', preparedBy, 'Name shown for statement reference only. Data remains stored locally.', fonts, 64),
+    drawMiniStat(page4, PAGE.marginX + statCardWidth + 12, statsTop, statCardWidth, 'Generated', data.generatedAtLabel, 'Export timestamp for this statement package.', fonts, 64),
+  );
 
-  const finalTop = statsTop - 82;
+  // Follows the real card height so a taller note can never be overlapped.
+  const finalTop = statsTop - statCardHeight - 18;
   page4.drawRectangle({ x: PAGE.marginX, y: finalTop - 82, width: CONTENT_WIDTH, height: 82, color: COLORS.ink });
   drawTrackedText(page4, 'FINAL RESULT', { x: PAGE.marginX + 18, y: finalTop - 20, size: 9, font: fonts.bold, color: COLORS.panelBorder, characterSpacing: 1.4 });
   page4.drawText('Net Income', { x: PAGE.marginX + 18, y: finalTop - 52, size: 22, font: fonts.bold, color: COLORS.white });
