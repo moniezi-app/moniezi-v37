@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.6.1"; // v37.6.1: welcome panel flips after the demo; translucent stat panels
+const CUSTOMER_VERSION = "37.6.3"; // v37.6.3: one word for one thing — "demo" everywhere
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -3873,7 +3873,7 @@ const demoMileageTrips: MileageTrip[] = [
   const handleRemoveSampleData = () => {
     performReset();
     setIsDemoData(false);
-    showToast("Sample data removed. The app is ready for your own records.", "success");
+    showToast("Demo removed. The app is ready for your own records.", "success");
   };
 
   const handleLoadSampleData = async () => {
@@ -3881,7 +3881,7 @@ const demoMileageTrips: MileageTrip[] = [
     markSampleDataTried();
     setShowMainMenu(false);
     setCurrentPage(Page.Dashboard);
-    showToast("Sample data loaded. Remove it any time from the banner at the top.", "success");
+    showToast("Demo loaded. Remove it any time from the banner at the top.", "success");
   };
 
   const confirmDeleteInvoice = () => {
@@ -7301,9 +7301,9 @@ html, body, #root {
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
           <PlayCircle size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-bold text-amber-900 dark:text-amber-100">Sample data</div>
+            <div className="text-sm font-bold text-amber-900 dark:text-amber-100">Demo data</div>
             <div className="text-xs font-medium text-amber-800/80 dark:text-amber-200/70">
-              These are example records, not your business.
+              These are demo records, not your business.
             </div>
           </div>
           <button
@@ -7335,12 +7335,12 @@ html, body, #root {
             </div>
 
             <div className={`text-center text-2xl font-extrabold leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-              {hasTriedSampleData ? 'Now make it yours' : 'See it filled in first'}
+              {hasTriedSampleData ? 'Now make it yours' : 'Load the demo'}
             </div>
             <p className={`mx-auto mt-2.5 max-w-[34ch] text-center text-[14px] leading-6 ${theme === 'dark' ? 'text-slate-200/90' : 'text-slate-800'}`}>
               {hasTriedSampleData
-                ? 'The example is cleared. Record a job, an expense, a mile or an invoice — whatever you did today.'
-                : 'Load a complete example business, look around, then clear it out and start your own. Nothing to undo.'}
+                ? 'The demo is cleared. Record a job, an expense, a mile or an invoice — whatever you did today.'
+                : 'A complete demo business you can look around, then clear out and start your own. Nothing to undo.'}
             </p>
 
             {/* Real counts, read from the sample data itself. Only shown while
@@ -7355,7 +7355,7 @@ html, body, #root {
                 <div
                   key={stat.label}
                   className="flex-1 rounded-2xl px-1.5 py-2.5 text-center"
-                  style={{ backgroundColor: 'rgba(4,120,87,0.70)', border: '1px solid rgba(255,255,255,0.18)' }}
+                  style={{ backgroundColor: 'rgba(4,120,87,0.35)', border: '1px solid rgba(255,255,255,0.16)' }}
                 >
                   <div className="font-extrabold" style={{ color: '#ffffff', fontSize: '17px' }}>{stat.value}</div>
                   <div className="text-[10px] font-bold tracking-[0.05em]" style={{ color: 'rgba(255,255,255,0.88)' }}>
@@ -7373,14 +7373,14 @@ html, body, #root {
               onClick={hasTriedSampleData ? () => setShowQuickAddMenu(true) : handleLoadSampleData}
               className="mt-5 w-full rounded-xl bg-amber-500 px-5 py-4 text-center text-[16px] font-bold text-white shadow-lg shadow-amber-950/30 transition-colors hover:bg-amber-400"
             >
-              {hasTriedSampleData ? 'Record my first entry' : 'Load the example'}
+              {hasTriedSampleData ? 'Record my first entry' : 'Load the demo'}
             </button>
 
             <button
               onClick={hasTriedSampleData ? handleLoadSampleData : () => setShowQuickAddMenu(true)}
               className={`mt-3.5 w-full py-2 text-center text-[13px] font-semibold underline underline-offset-4 transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
             >
-              {hasTriedSampleData ? 'Show the example again' : 'Skip — record my first entry'}
+              {hasTriedSampleData ? 'Show the demo again' : 'Skip — record my first entry'}
             </button>
           </div>
         </div>
@@ -10235,7 +10235,7 @@ html, body, #root {
                       onClick={handleRemoveSampleData}
                       className="flex items-center justify-center gap-3 py-5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all font-bold text-sm uppercase tracking-wider active:scale-95"
                     >
-                      <Trash2 size={20} /> Remove Sample Data
+                      <Trash2 size={20} /> Remove Demo Data
                     </button>
                     )}
                     <button
@@ -10526,7 +10526,7 @@ html, body, #root {
                       {(isAppEmpty || isDemoData) && (
                       <button onClick={handleLoadSampleData} className="py-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 rounded-lg text-sm font-bold uppercase tracking-widest shadow-lg transition-all flex flex-col items-center justify-center gap-3 active:scale-95">
                         {seedSuccess ? <CheckCircle size={24} /> : <PlayCircle size={24} />}
-                        <span>{seedSuccess ? 'Sample Data Loaded' : 'Load Sample Data'}</span>
+                        <span>{seedSuccess ? 'Demo Data Loaded' : 'Load Demo Data'}</span>
                       </button>
                       )}
                       <button onClick={handleClearData} className="py-6 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 hover:from-red-100 hover:to-orange-100 dark:hover:from-red-900/30 dark:hover:to-orange-900/30 border-2 border-red-200 dark:border-red-800 text-red-900 dark:text-red-100 rounded-lg text-sm font-bold uppercase tracking-widest shadow-lg transition-all flex flex-col items-center justify-center gap-3 active:scale-95">
@@ -10540,7 +10540,7 @@ html, body, #root {
                       <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                       <div className="text-sm text-red-900 dark:text-red-100">
                         <p className="font-semibold mb-1">⚠️ Warning: Destructive Actions</p>
-                        <p className="mb-2"><strong>Load Sample Data:</strong> Replaces everything with example records so you can explore. Only offered while the app is empty, so your own records can never be overwritten.</p>
+                        <p className="mb-2"><strong>Load Demo Data:</strong> Replaces everything with demo records so you can explore. Only offered while the app is empty, so your own records can never be overwritten.</p>
                         <p><strong>Reset & Clear All:</strong> Permanently deletes ALL your data including transactions, invoices, tax payments, and custom categories. This action cannot be undone!</p>
                       </div>
                     </div>
@@ -10930,8 +10930,8 @@ html, body, #root {
                       <Trash2 size={18} />
                     </span>
                     <span className="min-w-0">
-                      Remove sample data
-                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Clears the example records and starts you fresh</span>
+                      Remove the demo
+                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Clears the demo records and starts you fresh</span>
                     </span>
                   </button>
                 ) : (
@@ -10943,8 +10943,8 @@ html, body, #root {
                       <PlayCircle size={18} />
                     </span>
                     <span className="min-w-0">
-                      Try sample data
-                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">See a filled-in example. Removable any time.</span>
+                      Try the demo
+                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">A filled-in demo business. Removable any time.</span>
                     </span>
                   </button>
                 )}
