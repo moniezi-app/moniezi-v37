@@ -794,7 +794,7 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.6.3"; // v37.6.3: one word for one thing — "demo" everywhere
+const CUSTOMER_VERSION = "37.7.0"; // v37.7.0: emerald tile styling for demo stats and menu; menu hierarchy
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -7354,11 +7354,10 @@ html, body, #root {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex-1 rounded-2xl px-1.5 py-2.5 text-center"
-                  style={{ backgroundColor: 'rgba(4,120,87,0.35)', border: '1px solid rgba(255,255,255,0.16)' }}
+                  className="flex-1 rounded-xl border border-emerald-200 bg-emerald-50 px-1.5 py-3 text-center dark:border-emerald-700/40 dark:bg-emerald-500/10"
                 >
-                  <div className="font-extrabold" style={{ color: '#ffffff', fontSize: '17px' }}>{stat.value}</div>
-                  <div className="text-[10px] font-bold tracking-[0.05em]" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                  <div className="text-[19px] font-extrabold text-emerald-700 dark:text-emerald-300">{stat.value}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                     {stat.label}
                   </div>
                 </div>
@@ -10889,27 +10888,27 @@ html, body, #root {
             <div className="space-y-1">
               <button
                 onClick={() => { setCurrentPage(Page.Clients); setShowMainMenu(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full flex items-center gap-3.5 p-3 rounded-xl text-left text-[17px] font-bold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <span className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <Users size={18} />
                 </span>
                 <span className="min-w-0">
                   Customers
-                  <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Contacts and job history</span>
+                  <span className="mt-0.5 block text-[12.5px] font-medium text-slate-500 dark:text-slate-400">Contacts and job history</span>
                 </span>
               </button>
 
               <button
                 onClick={() => { setBillingDocType('estimate'); setCurrentPage(Page.Invoices); setShowMainMenu(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full flex items-center gap-3.5 p-3 rounded-xl text-left text-[17px] font-bold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <span className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <ClipboardList size={18} />
                 </span>
                 <span className="min-w-0">
                   Estimates
-                  <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Quotes you haven&apos;t billed yet</span>
+                  <span className="mt-0.5 block text-[12.5px] font-medium text-slate-500 dark:text-slate-400">Quotes you haven&apos;t billed yet</span>
                 </span>
               </button>
             </div>
@@ -10924,27 +10923,27 @@ html, body, #root {
                 {isDemoData ? (
                   <button
                     onClick={() => { handleRemoveSampleData(); setShowMainMenu(false); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="w-full flex items-center gap-3.5 p-3 rounded-xl text-left text-[17px] font-bold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    <span className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-500/10 dark:text-emerald-300">
                       <Trash2 size={18} />
                     </span>
                     <span className="min-w-0">
                       Remove the demo
-                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Clears the demo records and starts you fresh</span>
+                      <span className="mt-0.5 block text-[12.5px] font-medium text-slate-500 dark:text-slate-400">Clears the demo records and starts you fresh</span>
                     </span>
                   </button>
                 ) : (
                   <button
                     onClick={handleLoadSampleData}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="w-full flex items-center gap-3.5 p-3 rounded-xl text-left text-[17px] font-bold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    <span className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-500/10 dark:text-emerald-300">
                       <PlayCircle size={18} />
                     </span>
                     <span className="min-w-0">
                       Try the demo
-                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">A filled-in demo business. Removable any time.</span>
+                      <span className="mt-0.5 block text-[12.5px] font-medium text-slate-500 dark:text-slate-400">A filled-in demo business. Removable any time.</span>
                     </span>
                   </button>
                 )}
@@ -10959,14 +10958,14 @@ html, body, #root {
             <div className="space-y-1">
               <button
                 onClick={() => { setCurrentPage(Page.Settings); setShowMainMenu(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full flex items-center gap-3.5 p-3 rounded-xl text-left text-[17px] font-bold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <span className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <Settings size={18} />
                 </span>
                 <span className="min-w-0">
                   Settings
-                  <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">Business details, backup, licence</span>
+                  <span className="mt-0.5 block text-[12.5px] font-medium text-slate-500 dark:text-slate-400">Business details, backup, licence</span>
                 </span>
               </button>
 
@@ -10974,14 +10973,14 @@ html, body, #root {
                 <a
                   href={`mailto:${SUPPORT_EMAIL}`}
                   onClick={() => setShowMainMenu(false)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="w-full flex items-center gap-3.5 p-3 rounded-xl text-left text-[17px] font-bold text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <span className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-500/10 dark:text-emerald-300">
                     <HelpCircle size={18} />
                   </span>
                   <span className="min-w-0">
                     Get help
-                    <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">{SUPPORT_EMAIL}</span>
+                    <span className="mt-0.5 block text-[12.5px] font-medium text-slate-500 dark:text-slate-400">{SUPPORT_EMAIL}</span>
                   </span>
                 </a>
               )}
