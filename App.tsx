@@ -798,8 +798,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.9.2"; // v37.9.2: toasts moved clear of the browser download banner
-setReportAppVersion("37.9.2");
+const CUSTOMER_VERSION = "37.10.0"; // v37.10.0: Mileage removed from Reports; exports consistent
+setReportAppVersion("37.10.0");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1330,7 +1330,7 @@ export default function App() {
   const taxSnapshotRef = useRef<HTMLDivElement>(null);
 
   // Reports screen menu (Settings-style tiles)
-  const [reportsMenuSection, setReportsMenuSection] = useState<'pl'|'taxsnapshot'|'taxprep'|'mileage'|'planner'>('pl');
+  const [reportsMenuSection, setReportsMenuSection] = useState<'pl'|'taxsnapshot'|'taxprep'|'planner'>('pl');
   const isMileageKeyboardEditing = isKeyboardEditing && currentPage === Page.Mileage;
   /**
    * These read as tabs, so they now behave as tabs: one report at a time.
@@ -8306,10 +8306,40 @@ html, body, #root {
                       {[2026, 2025, 2024, 2023].map(y => (<option key={y} value={y}>{y}</option>))}
                     </select>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <button type="button" onClick={openMileageAddDrawer} className="w-full text-center px-4 py-3 rounded-lg bg-emerald-600 text-white font-extrabold uppercase tracking-widest text-xs hover:bg-emerald-700 active:scale-95 transition-all">Add Trip</button>
-                    <button onClick={handleExportMileageSpreadsheet} className={`${exportButtonTonalClass} w-full text-center`}>Export Mileage Spreadsheet</button>
-                    <button onClick={handleExportMileageCSV} className={`${exportButtonUtilityClass} w-full text-center`}>Export Mileage CSV</button>
+                  <button
+                    type="button"
+                    onClick={openMileageAddDrawer}
+                    className="w-full text-center px-4 py-3 rounded-lg bg-emerald-600 text-white font-extrabold uppercase tracking-widest text-xs hover:bg-emerald-700 active:scale-95 transition-all"
+                  >
+                    Add Trip
+                  </button>
+
+                  {/* Same shape as the Mileage card in Tax Prep, so the two read
+                      as one feature reached from two places rather than two
+                      similarly-named features. */}
+                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[15px] font-bold text-slate-900 dark:text-white">Export these trips</div>
+                        <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                          Every trip logged in {taxPrepYear} — date, miles, purpose and deduction.
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          onClick={handleExportMileageSpreadsheet}
+                          className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-blue-700"
+                        >
+                          Excel
+                        </button>
+                        <button
+                          onClick={handleExportMileageCSV}
+                          className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                        >
+                          CSV
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -8388,19 +8418,6 @@ html, body, #root {
                   >
                     <Download size={18} />
                     <span className="text-[10px] md:text-sm mt-0.5 md:mt-0 text-center leading-tight">Tax Prep</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => scrollToReportSection('report-mileage', 'mileage')}
-                    className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-3 rounded-lg font-bold text-xs md:text-sm uppercase tracking-wide transition-all ${
-                      reportsMenuSection === 'mileage'
-                        ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30'
-                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    <Truck size={18} />
-                    <span className="text-[10px] md:text-sm mt-0.5 md:mt-0 text-center leading-tight">Mileage</span>
                   </button>
 
                   <button
@@ -8741,37 +8758,6 @@ html, body, #root {
                 </div>
 
                 {/* Mileage Tracker */}
-                <div style={{ display: reportsMenuSection === 'mileage' ? undefined : 'none' }} id="report-mileage" className="bg-white dark:bg-slate-950 p-5 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                        <Truck size={20} strokeWidth={2} />
-                      </div>
-                      <div>
-                        <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Mileage</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">Track business miles and export for tax prep.</p>
-                      </div>
-                    </div>
-                    <button type="button" onClick={openMileageAddDrawer} className="px-5 py-3 rounded-lg bg-emerald-600 text-white font-extrabold uppercase tracking-widest text-xs hover:bg-emerald-700 active:scale-95 transition-all whitespace-nowrap">Add Trip</button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
-                      <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Trips</div>
-                      <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{mileageForTaxYear.length}</div>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
-                      <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Miles</div>
-                      <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{mileageTotalMilesForTaxYear.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
-                      <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Estimated Deduction</div>
-                      <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{formatCurrency.format(mileageDeductionForTaxYear)}</div>
-                    </div>
-                  </div>
-
-                  {renderMileageTripList()}
-                </div>
 
 <div style={{ display: reportsMenuSection === 'planner' ? undefined : 'none' }} id="report-planner" className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-lg rounded-3xl p-6 relative overflow-hidden">
                   <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-blue-500/10 dark:bg-blue-400/10 opacity-0 dark:opacity-100 blur-2xl pointer-events-none" />

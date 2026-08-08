@@ -1,7 +1,7 @@
 {
   "name": "moniezi-pro-finance-v37",
   "private": true,
-  "version": "37.9.2",
+  "version": "37.10.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
