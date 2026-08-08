@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback, useR
 import { createPortal } from 'react-dom';
 import html2pdf from 'html2pdf.js';
 import { installMonieziFonts, waitForMonieziFonts } from './src/monieziFonts';
-import { generateTaxSummaryPdfBytes, generateProfitLossPdfBytes, type TaxSummaryPdfData, type ProfitLossPdfData } from './src/reportPdfEngine';
+import { generateTaxSummaryPdfBytes, generateProfitLossPdfBytes, setReportAppVersion, type TaxSummaryPdfData, type ProfitLossPdfData } from './src/reportPdfEngine';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -794,7 +794,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.7.2"; // v37.7.2: PDF values fit their boxes; detail rows measured once, with margin
+const CUSTOMER_VERSION = "37.7.3"; // v37.7.3: PDF footers stamped with the app version
+setReportAppVersion("37.7.3");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";

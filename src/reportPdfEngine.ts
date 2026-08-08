@@ -327,6 +327,40 @@ const drawProgressRow = (
  * descenders crossed it. Height is now a MINIMUM: the box grows to fit the
  * wrapped note plus a real bottom margin.
  */
+/**
+ * Picks the largest size at which `text` fits `maxWidth`, down to `minSize`.
+ * If it still will not fit, truncates with an ellipsis. Character-count guesses
+ * are unreliable — "Other recorded categories" overflowed its box because the
+ * value was drawn at a fixed size with no width check at all.
+ */
+const fitText = (
+  text: string,
+  font: PDFFont,
+  maxWidth: number,
+  maxSize: number,
+  minSize: number,
+): { text: string; size: number } => {
+  const clean = sanitizePdfText(text);
+  let size = maxSize;
+  while (size > minSize && font.widthOfTextAtSize(clean, size) > maxWidth) {
+    size -= 0.4;
+  }
+  if (font.widthOfTextAtSize(clean, size) <= maxWidth) return { text: clean, size };
+
+  let truncated = clean;
+  while (truncated.length > 1 && font.widthOfTextAtSize(truncated + '...', size) > maxWidth) {
+    truncated = truncated.slice(0, -1);
+  }
+  return { text: truncated.trimEnd() + '...', size };
+};
+
+/**
+ * Stamped into every report footer. Without it there is no way to tell which
+ * build produced a given PDF, which makes "is this fixed?" unanswerable.
+ */
+let REPORT_APP_VERSION = '';
+export const setReportAppVersion = (version: string) => { REPORT_APP_VERSION = version; };
+
 const MINI_STAT_NOTE_SIZE = 6.8;
 const MINI_STAT_NOTE_GAP = 2.1;
 const MINI_STAT_NOTE_TOP = 55;
@@ -365,10 +399,11 @@ const drawMiniStat = (
     color: COLORS.inkSoft,
     characterSpacing: 1.1,
   });
-  page.drawText(sanitizePdfText(value), {
+  const fittedValue = fitText(value, fonts.bold, width - 24, 16, 9);
+  page.drawText(fittedValue.text, {
     x: x + 12,
     y: yTop - 41,
-    size: 16,
+    size: fittedValue.size,
     font: fonts.bold,
     color: COLORS.ink,
   });
@@ -429,7 +464,7 @@ const drawFooter = (page: PDFPage, textLeft: string, textRight: string, fonts: F
   drawRule(page, PAGE.marginBottom + 10);
 
   const size = 8.5;
-  const left = sanitizePdfText(textLeft);
+  const left = sanitizePdfText(REPORT_APP_VERSION ? `${textLeft} | v${REPORT_APP_VERSION}` : textLeft);
   const right = sanitizePdfText(`${textRight} · ${pageLabel}`);
   const leftWidth = fonts.body.widthOfTextAtSize(left, size);
   const rightWidth = fonts.body.widthOfTextAtSize(right, size);
@@ -937,13 +972,36 @@ const drawReportPageTitle = (
   return drawTextBlock(page, subtitle, PAGE.marginX, subtitleTop, titleWidth, fonts.body, 8.9, COLORS.inkSoft, 3.5);
 };
 
+const DETAIL_LABEL_SIZE = 11.4;
+const DETAIL_LABEL_STEP = 14.6;
+const DETAIL_NOTE_SIZE = 7.4;
+const DETAIL_NOTE_STEP = 9.8;
+const DETAIL_FIRST_BASELINE = 18;
+const DETAIL_NOTE_OFFSET = 2;
+const DETAIL_ROW_BOTTOM_PAD = 12;
+
+/**
+ * Mirrors exactly how drawDetailRowsCard lays a row out, so the measured height
+ * and the drawn height cannot disagree. Previously the two used different
+ * formulas and the last note ended up flush against the card's bottom border.
+ */
+const detailRowHeight = (row: DetailRow, fonts: FontSet, bodyWidth: number) => {
+  const labelLines = splitLines(row.label, fonts.bold, DETAIL_LABEL_SIZE, bodyWidth).length;
+  const noteLines = row.note ? splitLines(row.note, fonts.body, DETAIL_NOTE_SIZE, bodyWidth).length : 0;
+
+  let lastBaseline = DETAIL_FIRST_BASELINE + (labelLines - 1) * DETAIL_LABEL_STEP;
+  if (noteLines) {
+    lastBaseline += DETAIL_LABEL_STEP + DETAIL_NOTE_OFFSET + (noteLines - 1) * DETAIL_NOTE_STEP;
+  }
+  // Room for descenders below the final baseline, then the bottom margin.
+  const descender = (noteLines ? DETAIL_NOTE_SIZE : DETAIL_LABEL_SIZE) * 0.28;
+  return Math.max(46, lastBaseline + descender + DETAIL_ROW_BOTTOM_PAD);
+};
+
 const measureDetailRowsCardHeight = (rows: DetailRow[], fonts: FontSet, width: number) => {
   const bodyWidth = width - SECTION_INSET * 2 - 140;
-  return rows.reduce((sum, row) => {
-    const labelHeight = textBlockHeight(row.label, fonts.bold, 11.4, bodyWidth, 3.2);
-    const noteHeight = row.note ? textBlockHeight(row.note, fonts.body, 7.4, bodyWidth, 2.4) : 0;
-    return sum + Math.max(42, 14 + labelHeight + (noteHeight ? noteHeight + 8 : 0));
-  }, 0) + SECTION_HEADER_HEIGHT + 12;
+  return rows.reduce((sum, row) => sum + detailRowHeight(row, fonts, bodyWidth), 0)
+    + SECTION_HEADER_HEIGHT + 12;
 };
 
 const drawDetailRowsCard = (
@@ -963,9 +1021,9 @@ const drawDetailRowsCard = (
   let cursorY = bodyTop;
 
   rows.forEach((row, index) => {
-    const labelLines = splitLines(row.label, fonts.bold, 11.4, bodyWidth);
-    const noteLines = row.note ? splitLines(row.note, fonts.body, 7.4, bodyWidth) : [];
-    const rowHeight = Math.max(42, 14 + labelLines.length * 11.4 + Math.max(0, labelLines.length - 1) * 3.2 + (noteLines.length ? noteLines.length * 7.4 + Math.max(0, noteLines.length - 1) * 2.4 + 8 : 0));
+    const labelLines = splitLines(row.label, fonts.bold, DETAIL_LABEL_SIZE, bodyWidth);
+    const noteLines = row.note ? splitLines(row.note, fonts.body, DETAIL_NOTE_SIZE, bodyWidth) : [];
+    const rowHeight = detailRowHeight(row, fonts, bodyWidth);
 
     if (index > 0) {
       page.drawLine({
@@ -1002,8 +1060,9 @@ const drawDetailRowsCard = (
       });
     }
 
-    const valueText = sanitizePdfText(row.value);
-    const valueSize = row.value.length > 14 ? 12.6 : 14.2;
+    const fittedRowValue = fitText(row.value, fonts.bold, 132, 14.2, 9);
+    const valueText = fittedRowValue.text;
+    const valueSize = fittedRowValue.size;
     const valueWidth = fonts.bold.widthOfTextAtSize(valueText, valueSize);
     page.drawText(valueText, {
       x: x + width - SECTION_INSET - valueWidth,
@@ -1222,10 +1281,12 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
     fonts,
     { titleSize: 23, maxTitleLines: 2 },
   );
-  drawMiniStat(page3, PAGE.marginX, y, statWidth, 'Top expense category', `${sanitizePdfText(data.topExpenseCategoryName)}`, `${formatAccountingCurrency(data.currencySymbol, data.topExpenseCategoryAmount)} - ${formatPercent(data.topExpenseCategorySharePct)} of operating expenses.`, fonts, 82);
-  drawMiniStat(page3, PAGE.marginX + statWidth + 12, y, statWidth, 'Expense categories used', formatNumber(data.expenseCategoryCount), 'Distinct operating expense categories represented in this statement.', fonts, 82);
-  drawMiniStat(page3, PAGE.marginX + (statWidth + 12) * 2, y, statWidth, 'Operating expense ratio', formatPercent(data.operatingExpenseRatioPct), 'Operating expenses as a percentage of net revenue.', fonts, 82);
-  y -= 82 + 18;
+  const page3StatHeight = Math.max(
+    drawMiniStat(page3, PAGE.marginX, y, statWidth, 'Top expense category', `${sanitizePdfText(data.topExpenseCategoryName)}`, `${formatAccountingCurrency(data.currencySymbol, data.topExpenseCategoryAmount)} - ${formatPercent(data.topExpenseCategorySharePct)} of operating expenses.`, fonts, 82),
+    drawMiniStat(page3, PAGE.marginX + statWidth + 12, y, statWidth, 'Expense categories used', formatNumber(data.expenseCategoryCount), 'Distinct operating expense categories represented in this statement.', fonts, 82),
+    drawMiniStat(page3, PAGE.marginX + (statWidth + 12) * 2, y, statWidth, 'Operating expense ratio', formatPercent(data.operatingExpenseRatioPct), 'Operating expenses as a percentage of net revenue.', fonts, 82),
+  );
+  y -= page3StatHeight + 18;
 
   const labelWidthP3 = 268;
   const amountWidthP3 = 122;
