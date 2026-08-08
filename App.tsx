@@ -794,8 +794,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.8.0"; // v37.8.0: reports headed by the business name; rebuilt centred footer
-setReportAppVersion("37.8.0");
+const CUSTOMER_VERSION = "37.8.1"; // v37.8.1: footer truly centred; business-first filenames; one P&L export path
+setReportAppVersion("37.8.1");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -4851,7 +4851,7 @@ const demoMileageTrips: MileageTrip[] = [
         row[6],
       ]),
     ];
-    downloadBlob(makeCsvBlob(rows), `MONIEZI_TaxTransactions_${taxPrepYear}.csv`);
+    downloadBlob(makeCsvBlob(rows), `${exportFilePrefix()}_Tax_Transactions_${taxPrepYear}.csv`);
     showToast(`Exported Tax Transactions CSV for ${taxPrepYear}`, 'success');
   };
 
@@ -4896,7 +4896,7 @@ const demoMileageTrips: MileageTrip[] = [
         row[6],
       ]),
     ];
-    downloadBlob(makeCsvBlob(rows), `MONIEZI_Mileage_${taxPrepYear}.csv`);
+    downloadBlob(makeCsvBlob(rows), `${exportFilePrefix()}_Mileage_${taxPrepYear}.csv`);
     showToast(`Exported Mileage CSV for ${taxPrepYear}`, 'success');
   };
 
@@ -5048,7 +5048,7 @@ const demoMileageTrips: MileageTrip[] = [
     if (incompleteMileageCount > 0) attentionItems.push(`Complete purpose or mileage details on ${incompleteMileageCount} mileage ${incompleteMileageCount === 1 ? 'trip' : 'trips'}.`);
     if (!attentionItems.length) attentionItems.push('No major data gaps were detected in this tax-prep package.');
 
-    const filename = `MONIEZI_Tax_Prep_Package_${taxPrepYear}.pdf`;
+    const filename = `${exportFilePrefix()}_Tax_Prep_Package_${taxPrepYear}.pdf`;
     const generatedAtLabel = new Date().toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -5683,6 +5683,13 @@ const demoMileageTrips: MileageTrip[] = [
       filename,
     };
   };
+
+  /**
+   * Export filenames lead with the business name. An accountant handling forty
+   * clients cannot tell whose "MONIEZI_Mileage_2026.csv" they are looking at.
+   */
+  const exportFilePrefix = () =>
+    (settings.businessName || 'Business').replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
 
   const downloadBlobFile = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -9201,8 +9208,11 @@ html, body, #root {
                       <div className="flex items-center gap-2">
                         {!isGeneratingPLPdf && !plExportRequested && (
                           <>
+                            {/* Both go through the PDF engine. The old paths screenshotted
+                                this preview with html2canvas, which produced an image: text
+                                not selectable, large files, and none of the report fixes. */}
                             <button
-                              onClick={sharePLPDF}
+                              onClick={shareProPLPDF}
                               className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors"
                             >
                               <Share2 className="w-4 h-4" />
@@ -9210,7 +9220,7 @@ html, body, #root {
                             </button>
 
                             <button
-                              onClick={() => setPlExportRequested(true)}
+                              onClick={saveProPLPDF}
                               className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors"
                             >
                               <Download className="w-4 h-4" />
@@ -9365,96 +9375,12 @@ html, body, #root {
                         Close
                       </button>
                       <button
-                        onClick={async () => {
-                          setIsGeneratingPDF(true);
-                          try {
-                            await waitForMonieziFonts();
-                            const element = document.getElementById('pl-pdf-preview-content');
-                            if (!element) throw new Error('Preview content not found');
-                            
-                            const periodLabel = plPeriodType === 'month' 
-                              ? referenceDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                              : plPeriodType === 'quarter' 
-                                ? `Q${Math.floor(referenceDate.getMonth() / 3) + 1} ${referenceDate.getFullYear()}`
-                                : plPeriodType === 'year'
-                                  ? referenceDate.getFullYear().toString()
-                                  : 'All-Time';
-                            
-                            // IMPORTANT (iPhone/Safari): getBoundingClientRect() can under-report height for
-                            // long, scrollable content, which causes the bottom of the PDF (notes/footer) to be cut off.
-                            // Solution: clone to an off-screen wrapper (no scroll clipping) and size the PDF
-                            // to the full scrollHeight so the export is ONE long page (no page breaks).
-                            let cloneWrapper: HTMLDivElement | null = null;
-                            try {
-                              const source = element as HTMLElement;
-
-                              cloneWrapper = document.createElement('div');
-                              cloneWrapper.style.position = 'fixed';
-                              cloneWrapper.style.left = '-100000px';
-                              cloneWrapper.style.top = '0';
-                              cloneWrapper.style.width = `${source.scrollWidth}px`;
-                              cloneWrapper.style.background = '#ffffff';
-                              cloneWrapper.style.padding = '0';
-                              cloneWrapper.style.margin = '0';
-                              cloneWrapper.style.zIndex = '-1';
-
-                              const clone = prepareProfitLossPdfClone(source);
-
-                              cloneWrapper.appendChild(clone);
-                              document.body.appendChild(cloneWrapper);
-
-                              await new Promise(resolve => requestAnimationFrame(() => resolve(true)));
-
-                              const contentWidth = clone.scrollWidth;
-                              const contentHeight = clone.scrollHeight;
-
-                              const pxToMm = 0.264583; // 96 DPI px -> mm
-                              const pageWidthMm = 210;
-                              const marginMm = 8;
-                              const contentWidthMm = pageWidthMm - (marginMm * 2);
-
-                              const scaleFactor = contentWidthMm / (contentWidth * pxToMm);
-                              const pageHeightMm = Math.ceil((contentHeight * pxToMm * scaleFactor) + (marginMm * 2) + 2);
-
-                              const opt = {
-                                margin: [marginMm, marginMm, marginMm, marginMm],
-                                filename: `PL-Statement-${periodLabel.replace(/\s+/g, '-')}.pdf`,
-                                image: { type: 'jpeg', quality: 0.95 },
-                                html2canvas: {
-                                  scale: 2,
-                                  useCORS: true,
-                                  backgroundColor: '#ffffff',
-                                  logging: false,
-                                  scrollY: 0,
-                                  scrollX: 0,
-                                  windowWidth: contentWidth,
-                                  windowHeight: contentHeight
-                                },
-                                jsPDF: {
-                                  unit: 'mm',
-                                  format: [pageWidthMm, Math.max(297, pageHeightMm)],
-                                  orientation: 'portrait'
-                                },
-                                pagebreak: { mode: 'avoid-all' }
-                              };
-
-                              await html2pdf().set(opt).from(clone).save();
-                            } finally {
-                              if (cloneWrapper && cloneWrapper.parentNode) cloneWrapper.parentNode.removeChild(cloneWrapper);
-                            }
-                            showToast('PDF exported successfully!', 'success');
-                            setTimeout(() => closePLPreview(), 1000);
-                          } catch (error) {
-                            console.error('PDF generation error:', error);
-                            showToast('Failed to generate PDF. Please try again.', 'error');
-                          }
-                          setIsGeneratingPDF(false);
-                        }}
-                        disabled={isGeneratingPDF}
+                        onClick={saveProPLPDF}
+                        disabled={isGeneratingProPLPdf}
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
                       >
                         <Download className="w-4 h-4" />
-                        {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
+                        {isGeneratingProPLPdf ? 'Generating...' : 'Export PDF'}
                       </button>
                     </div>
                   </div>

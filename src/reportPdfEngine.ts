@@ -483,11 +483,11 @@ const drawFooter = (
     `Generated ${generatedAtLabel}${REPORT_APP_VERSION ? ` | MONIEZI Pro Finance v${REPORT_APP_VERSION}` : ' | MONIEZI Pro Finance'}`,
   );
 
-  // Centre the block in the band below the rule rather than hanging it off the top.
+  // Centre the block in the band between the rule and the page edge.
   const blockHeight = size + lineGap + provSize;
   const bandTop = ruleY;
-  const bandBottom = 20;
-  const blockTop = bandBottom + (bandTop - bandBottom + blockHeight) / 2;
+  const bandBottom = 0;
+  const blockTop = bandBottom + (bandTop - bandBottom) / 2 + blockHeight / 2;
 
   const line1Y = blockTop - size;
   const line2Y = line1Y - lineGap - provSize;
