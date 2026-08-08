@@ -456,31 +456,51 @@ const drawTable = (
 };
 
 /**
- * Both halves used to be drawn on one line with no width check, so a long
- * business name ran straight into the left-hand text ("...recordsAcme Creative
- * Studio"). If they cannot both fit, the footer stacks onto two lines instead.
+ * Two-line footer, vertically centred in the space between the rule and the
+ * page edge.
+ *
+ * Line 1 identifies the statement — entity, document type, period, page X of Y.
+ * These are what an accountant needs when pages get separated from each other.
+ * Line 2 is provenance in lighter grey: when it was generated, and by what.
  */
-const drawFooter = (page: PDFPage, textLeft: string, textRight: string, fonts: FontSet, pageLabel: string) => {
-  drawRule(page, PAGE.marginBottom + 10);
+const drawFooter = (
+  page: PDFPage,
+  identity: string,
+  pageLabel: string,
+  generatedAtLabel: string,
+  fonts: FontSet,
+) => {
+  const ruleY = PAGE.marginBottom + 10;
+  drawRule(page, ruleY);
 
-  const size = 8.5;
-  const left = sanitizePdfText(REPORT_APP_VERSION ? `${textLeft} | v${REPORT_APP_VERSION}` : textLeft);
-  const right = sanitizePdfText(`${textRight} · ${pageLabel}`);
-  const leftWidth = fonts.body.widthOfTextAtSize(left, size);
-  const rightWidth = fonts.body.widthOfTextAtSize(right, size);
+  const size = 8.2;
+  const provSize = 7.2;
+  const lineGap = 4;
+
+  const idText = sanitizePdfText(identity);
+  const pageText = sanitizePdfText(pageLabel);
+  const provText = sanitizePdfText(
+    `Generated ${generatedAtLabel}${REPORT_APP_VERSION ? ` | MONIEZI Pro Finance v${REPORT_APP_VERSION}` : ' | MONIEZI Pro Finance'}`,
+  );
+
+  // Centre the block in the band below the rule rather than hanging it off the top.
+  const blockHeight = size + lineGap + provSize;
+  const bandTop = ruleY;
+  const bandBottom = 20;
+  const blockTop = bandBottom + (bandTop - bandBottom + blockHeight) / 2;
+
+  const line1Y = blockTop - size;
+  const line2Y = line1Y - lineGap - provSize;
+
+  const pageWidth = fonts.body.widthOfTextAtSize(pageText, size);
   const available = PAGE.width - PAGE.marginX * 2;
-  const GAP = 14;
+  const fittedId = fitText(idText, fonts.body, available - pageWidth - 16, size, 6.4);
 
-  if (leftWidth + GAP + rightWidth <= available) {
-    page.drawText(left, { x: PAGE.marginX, y: FOOTER_Y, size, font: fonts.body, color: COLORS.inkSoft });
-    page.drawText(right, { x: PAGE.width - PAGE.marginX - rightWidth, y: FOOTER_Y, size, font: fonts.body, color: COLORS.inkSoft });
-    return;
-  }
+  page.drawText(fittedId.text, { x: PAGE.marginX, y: line1Y, size: fittedId.size, font: fonts.body, color: COLORS.inkSoft });
+  page.drawText(pageText, { x: PAGE.width - PAGE.marginX - pageWidth, y: line1Y, size, font: fonts.body, color: COLORS.inkSoft });
 
-  // Two lines: identity above, document and page below, both left-aligned so
-  // they never meet in the middle.
-  page.drawText(left, { x: PAGE.marginX, y: FOOTER_Y + 10, size, font: fonts.body, color: COLORS.inkSoft });
-  page.drawText(right, { x: PAGE.marginX, y: FOOTER_Y, size, font: fonts.body, color: COLORS.inkSoft });
+  const fittedProv = fitText(provText, fonts.body, available, provSize, 6);
+  page.drawText(fittedProv.text, { x: PAGE.marginX, y: line2Y, size: fittedProv.size, font: fonts.body, color: rgb(0.58, 0.64, 0.72) });
 };
 
 type TitleOptions = {
@@ -491,13 +511,14 @@ type TitleOptions = {
 
 const drawPageTitle = (
   page: PDFPage,
+  kicker: string,
   title: string,
   subtitle: string,
   fonts: FontSet,
   options: TitleOptions = {},
 ) => {
   const topY = PAGE.height - PAGE.marginTop;
-  drawTrackedText(page, 'MONIEZI TAX PREP PACKAGE', {
+  drawTrackedText(page, kicker, {
     x: PAGE.marginX,
     y: topY,
     size: 10.8,
@@ -616,6 +637,7 @@ export async function generateTaxSummaryPdfBytes(data: TaxSummaryPdfData): Promi
   // PAGE 1
   let y = drawPageTitle(
     page1,
+    data.businessName.toUpperCase(),
     `Executive Tax Snapshot ${sanitizePdfText(data.taxYear)}`,
     'A concise year-end package summarizing income, deductions, mileage, and supporting documentation from your MONIEZI records.',
     fonts,
@@ -674,11 +696,12 @@ export async function generateTaxSummaryPdfBytes(data: TaxSummaryPdfData): Promi
     page1.drawText(sanitizePdfText(row.value), { x: PAGE.marginX + CONTENT_WIDTH - 14 - valueWidth, y: rowTop - 17, size: 9.3, font: fonts.bold, color: COLORS.ink });
   });
 
-  drawFooter(page1, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${data.businessName} | Tax Year ${data.taxYear}`, fonts, 'Page 1 of 4');
+  drawFooter(page1, `${data.businessName} | Tax Prep Package | Tax Year ${data.taxYear}`, 'Page 1 of 4', data.generatedAtLabel, fonts);
 
   // PAGE 2
   y = drawPageTitle(
     page2,
+    data.businessName.toUpperCase(),
     'Documentation Readiness',
     'A practical review of receipt coverage, expense review status, mileage completeness, and package readiness before filing.',
     fonts,
@@ -719,11 +742,12 @@ export async function generateTaxSummaryPdfBytes(data: TaxSummaryPdfData): Promi
   page2.drawText('Readiness Takeaway', { x: PAGE.marginX + 18, y: page2NoteTop - 26, size: 12.4, font: fonts.bold, color: COLORS.ink });
   drawTextBlock(page2, `This page is designed to tell you, at a glance, how filing-ready your MONIEZI records look for tax year ${sanitizePdfText(data.taxYear)}. Low receipt or review coverage does not change your raw totals, but it does show where documentation or cleanup work may still be needed before filing.`, PAGE.marginX + 18, page2NoteTop - 40, CONTENT_WIDTH - 36, fonts.body, 9, COLORS.inkSoft, 4);
 
-  drawFooter(page2, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${data.businessName} | Tax Year ${data.taxYear}`, fonts, 'Page 2 of 4');
+  drawFooter(page2, `${data.businessName} | Tax Prep Package | Tax Year ${data.taxYear}`, 'Page 2 of 4', data.generatedAtLabel, fonts);
 
   // PAGE 3
   y = drawPageTitle(
     page3,
+    data.businessName.toUpperCase(),
     'Deductible Expense Breakdown',
     'Top expense categories by dollar amount, category share, and receipt-backed count for the selected tax year.',
     fonts,
@@ -756,11 +780,12 @@ export async function generateTaxSummaryPdfBytes(data: TaxSummaryPdfData): Promi
     { label: 'Receipts', width: 77, align: 'right' },
   ], expenseRows, fonts, expenseRowHeight, 8.2, 7.8);
 
-  drawFooter(page3, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${data.businessName} | Tax Year ${data.taxYear}`, fonts, 'Page 3 of 4');
+  drawFooter(page3, `${data.businessName} | Tax Prep Package | Tax Year ${data.taxYear}`, 'Page 3 of 4', data.generatedAtLabel, fonts);
 
   // PAGE 4
   y = drawPageTitle(
     page4,
+    data.businessName.toUpperCase(),
     'Mileage, Filing Checks & Handoff',
     'Quarter-level mileage review, open attention items, and final pre-filing guidance for this package.',
     fonts,
@@ -841,7 +866,7 @@ export async function generateTaxSummaryPdfBytes(data: TaxSummaryPdfData): Promi
   drawMiniStat(page4, PAGE.marginX, finalStatsTop, (CONTENT_WIDTH - 12) / 2, 'Prepared by', preparedBy, 'Name shown for package reference only. Data remains stored locally.', fonts, 64);
   drawMiniStat(page4, PAGE.marginX + (CONTENT_WIDTH - 12) / 2 + 12, finalStatsTop, (CONTENT_WIDTH - 12) / 2, 'Generated', data.generatedAtLabel, 'Export timestamp for this tax package.', fonts, 64);
 
-  drawFooter(page4, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${data.businessName} | Tax Year ${data.taxYear}`, fonts, 'Page 4 of 4');
+  drawFooter(page4, `${data.businessName} | Tax Prep Package | Tax Year ${data.taxYear}`, 'Page 4 of 4', data.generatedAtLabel, fonts);
 
   pdfDoc.setTitle(sanitizePdfText(`MONIEZI Tax Prep Package ${data.taxYear}`));
   pdfDoc.setAuthor('MONIEZI');
@@ -1188,7 +1213,7 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
   // PAGE 1
   let y = drawReportPageTitle(
     page1,
-    'MONIEZI PROFIT & LOSS',
+    businessName.toUpperCase(),
     'Profit & Loss Statement',
     'A concise management statement summarizing revenue, direct costs, operating expenses, and net income from your local MONIEZI records.',
     fonts,
@@ -1223,12 +1248,12 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
     { label: 'Net income', note: `Operating result after ${formatNumber(data.transactionCount)} transactions across ${formatNumber(data.expenseCategoryCount)} expense categories.`, value: formatAccountingCurrency(data.currencySymbol, data.netIncome), tone: 'positive' },
   ], fonts);
 
-  drawFooter(page1, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${businessName} | P&L | ${data.periodLabel}`, fonts, 'Page 1 of 4');
+  drawFooter(page1, `${businessName} | Profit & Loss | ${data.periodLabel}`, 'Page 1 of 4', data.generatedAtLabel, fonts);
 
   // PAGE 2
   y = drawReportPageTitle(
     page2,
-    'MONIEZI PROFIT & LOSS',
+    businessName.toUpperCase(),
     'Revenue & Gross Profit',
     'Top revenue categories, refunds, direct costs, and resulting gross profit for the selected reporting period.',
     fonts,
@@ -1270,12 +1295,12 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
   page2.drawRectangle({ x: PAGE.marginX, y: takeawayTop - takeawayHeight, width: CONTENT_WIDTH, height: takeawayHeight, color: COLORS.panel, borderColor: COLORS.panelBorder, borderWidth: 1 });
   page2.drawText('Revenue Takeaway', { x: PAGE.marginX + 18, y: takeawayTop - 26, size: 12.2, font: fonts.bold, color: COLORS.ink });
   drawTextBlock(page2, takeawayText, PAGE.marginX + 18, takeawayTop - 40, CONTENT_WIDTH - 36, fonts.body, 9.2, COLORS.inkSoft, 4.1);
-  drawFooter(page2, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${businessName} | P&L | ${data.periodLabel}`, fonts, 'Page 2 of 4');
+  drawFooter(page2, `${businessName} | Profit & Loss | ${data.periodLabel}`, 'Page 2 of 4', data.generatedAtLabel, fonts);
 
   // PAGE 3
   y = drawReportPageTitle(
     page3,
-    'MONIEZI PROFIT & LOSS',
+    businessName.toUpperCase(),
     'Operating Expense Breakdown',
     'Top operating expense categories by dollar amount and share of net revenue for the selected reporting period.',
     fonts,
@@ -1303,12 +1328,12 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
   drawTrackedText(page3, 'AMOUNT', { x: PAGE.marginX + labelWidthP3 + amountWidthP3 - 10 - trackedTextWidth('AMOUNT', fonts.bold, 7.8, 0.6), y: expenseBodyTop - 17, size: 7.8, font: fonts.bold, color: COLORS.inkSoft, characterSpacing: 0.6 });
   drawTrackedText(page3, 'SHARE', { x: PAGE.marginX + labelWidthP3 + amountWidthP3 + shareWidthP3 - 10 - trackedTextWidth('SHARE', fonts.bold, 7.8, 0.6), y: expenseBodyTop - 17, size: 7.8, font: fonts.bold, color: COLORS.inkSoft, characterSpacing: 0.6 });
   drawTableRows(page3, PAGE.marginX, expenseBodyTop - TABLE_HEADER_HEIGHT, CONTENT_WIDTH, expenseTableRows, fonts, { labelWidth: labelWidthP3, amountWidth: amountWidthP3, shareWidth: shareWidthP3 });
-  drawFooter(page3, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${businessName} | P&L | ${data.periodLabel}`, fonts, 'Page 3 of 4');
+  drawFooter(page3, `${businessName} | Profit & Loss | ${data.periodLabel}`, 'Page 3 of 4', data.generatedAtLabel, fonts);
 
   // PAGE 4
   y = drawReportPageTitle(
     page4,
-    'MONIEZI PROFIT & LOSS',
+    businessName.toUpperCase(),
     'Net Income, Notes & Handoff',
     'Other income or expense, final statement checks, and handoff notes for accountant review.',
     fonts,
@@ -1379,7 +1404,7 @@ export async function generateProfitLossPdfBytes(data: ProfitLossPdfData): Promi
   const marginTextWidth = fonts.body.widthOfTextAtSize(marginText, 8.5);
   page4.drawText(marginText, { x: PAGE.width - PAGE.marginX - 18 - marginTextWidth, y: finalTop - 68, size: 8.5, font: fonts.body, color: COLORS.panelBorder });
 
-  drawFooter(page4, 'MONIEZI Pro Finance | Generated privately from your local business records.', `${businessName} | P&L | ${data.periodLabel}`, fonts, 'Page 4 of 4');
+  drawFooter(page4, `${businessName} | Profit & Loss | ${data.periodLabel}`, 'Page 4 of 4', data.generatedAtLabel, fonts);
 
   pdfDoc.setTitle(sanitizePdfText(`MONIEZI Profit & Loss ${data.periodLabel}`));
   pdfDoc.setAuthor('MONIEZI');
