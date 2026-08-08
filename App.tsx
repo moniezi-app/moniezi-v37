@@ -798,8 +798,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.10.0"; // v37.10.0: Mileage removed from Reports; exports consistent
-setReportAppVersion("37.10.0");
+const CUSTOMER_VERSION = "37.11.0"; // v37.11.0: Reports grouped; tax figure honestly labelled as a reserve
+setReportAppVersion("37.11.0");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -7709,9 +7709,14 @@ html, body, #root {
                   <ArrowRight size={18} className="text-slate-300 dark:text-slate-300 -rotate-45 group-hover:rotate-0 group-hover:text-emerald-500 transition-all duration-300"/>
                </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-                  <div><div className="text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wider font-bold mb-1">Estimated Tax (YTD)</div><div className="text-2xl font-extrabold font-brand text-slate-900 dark:text-white">{formatCurrency.format(reportData.totalEstimatedTax)}</div></div>
+                  <div><div className="text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wider font-bold mb-1">Set Aside (YTD)</div><div className="text-2xl font-extrabold font-brand text-slate-900 dark:text-white">{formatCurrency.format(reportData.totalEstimatedTax)}</div></div>
                   <div><div className="text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wider font-bold mb-1">YTD Net Profit</div><div className="text-2xl font-bold text-slate-600 dark:text-slate-200">{formatCurrency.format(reportData.ytdNetProfit)}</div></div>
                </div>
+               <p className="mb-3 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  A cautious reserve, not a tax bill. Your standard deduction and other
+                  personal reductions aren&apos;t applied here, so what you actually owe is
+                  usually less.
+               </p>
                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
                   <div className="text-xs font-bold text-slate-600 dark:text-slate-300">Next Deadline: <span className="text-emerald-600 dark:text-emerald-400">{getNextEstimatedTaxDeadline().date}</span> — {getNextEstimatedTaxDeadline().days} days left</div>
                   <div onClick={(e) => { e.stopPropagation(); setCurrentPage(Page.Reports); setTimeout(() => { setScrollToTaxSnapshot(true); handleOpenTaxDrawer(); }, 100); }} className="text-xs font-bold text-blue-500 hover:underline uppercase tracking-wider cursor-pointer">Log Payment</div>
@@ -8375,12 +8380,17 @@ html, body, #root {
               
               
               <p className="text-slate-600 dark:text-slate-300 font-semibold mb-3">
-                Choose a report section below.
+                Documents to hand over, and tools to work out what you owe.
               </p>
 
-              {/* Reports Menu (like Settings) */}
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm mb-4">
-                <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
+              {/* Two groups, because these are two different jobs: documents you
+                  hand to an accountant, and tools you use to work out what you owe.
+                  Four identical tabs implied they were the same kind of thing. */}
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm mb-4">
+                <div className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  Share with your accountant
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => scrollToReportSection('report-pl', 'pl')}
@@ -8396,19 +8406,6 @@ html, body, #root {
 
                   <button
                     type="button"
-                    onClick={() => scrollToReportSection('report-taxsnapshot', 'taxsnapshot')}
-                    className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-3 rounded-lg font-bold text-xs md:text-sm uppercase tracking-wide transition-all ${
-                      reportsMenuSection === 'taxsnapshot'
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
-                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    <Calculator size={18} />
-                    <span className="text-[10px] md:text-sm mt-0.5 md:mt-0 text-center leading-tight">Tax Snapshot</span>
-                  </button>
-
-                  <button
-                    type="button"
                     onClick={() => scrollToReportSection('report-taxprep', 'taxprep')}
                     className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-3 rounded-lg font-bold text-xs md:text-sm uppercase tracking-wide transition-all ${
                       reportsMenuSection === 'taxprep'
@@ -8418,6 +8415,25 @@ html, body, #root {
                   >
                     <Download size={18} />
                     <span className="text-[10px] md:text-sm mt-0.5 md:mt-0 text-center leading-tight">Tax Prep</span>
+                  </button>
+
+</div>
+
+                  <div className="mt-4 mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                    Work out what you owe
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => scrollToReportSection('report-taxsnapshot', 'taxsnapshot')}
+                    className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-3 md:px-4 py-3 rounded-lg font-bold text-xs md:text-sm uppercase tracking-wide transition-all ${
+                      reportsMenuSection === 'taxsnapshot'
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <Calculator size={18} />
+                    <span className="text-[10px] md:text-sm mt-0.5 md:mt-0 text-center leading-tight">Tax Snapshot</span>
                   </button>
 
                   <button
@@ -8579,11 +8595,22 @@ html, body, #root {
                   <div className="flex items-center gap-2 sm:gap-3">
                     <Calculator size={20} strokeWidth={2} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                     <div>
-                      <h3 style={{ fontSize: '16px' }} className="font-bold uppercase tracking-tight font-brand">Tax Snapshot</h3>
+                      <h3 style={{ fontSize: '16px' }} className="font-bold uppercase tracking-tight font-brand">What To Set Aside</h3>
                       <p style={{ fontSize: '11px' }} className="text-slate-600 dark:text-slate-300 font-bold mt-0.5">Based on Net Profit: {formatCurrency.format(reportData.ytdNetProfit)}</p>
                     </div>
                   </div>
                   <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenTaxDrawer(); }} style={{ fontSize: '10px' }} className="relative z-30 cursor-pointer font-bold text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors uppercase tracking-wider active:scale-95 self-start sm:self-auto">Manage Payments</button>
+                </div>
+
+                <div className="relative z-20 mb-5 rounded-xl border border-amber-300/70 bg-amber-50 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+                  <p className="text-[12px] leading-relaxed text-amber-900 dark:text-amber-100">
+                    <span className="font-bold">This runs high on purpose.</span> Your business
+                    expenses are already deducted, but your standard deduction, the deductible
+                    half of self-employment tax, and the 20% qualified business income deduction
+                    are not applied here — and income tax is charged at a flat rate rather than
+                    in bands. Treat it as a safe amount to hold back. For a closer figure, use
+                    the Tax Planner.
+                  </p>
                 </div>
                 <div className="space-y-4 sm:space-y-6 relative z-10">
                   <div className="flex justify-between items-start gap-2">
@@ -8595,8 +8622,8 @@ html, body, #root {
                   </div>
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-1">
-                      <div style={{ fontSize: '13px' }} className="font-bold text-slate-700 dark:text-slate-300">Income Tax Estimate</div>
-                      <div style={{ fontSize: '10px' }} className="text-slate-600 dark:text-slate-300 uppercase tracking-wider">Based on {reportData.totalIncomeTaxRate}% Combined Rate</div>
+                      <div style={{ fontSize: '13px' }} className="font-bold text-slate-700 dark:text-slate-300">Income Tax Reserve</div>
+                      <div style={{ fontSize: '10px' }} className="text-slate-600 dark:text-slate-300 uppercase tracking-wider">Flat {reportData.totalIncomeTaxRate}% on all profit</div>
                     </div>
                     <div style={{ fontSize: '18px' }} className="font-bold flex-shrink-0">{formatCurrency.format(reportData.incomeTaxLiability)}</div>
                   </div>
