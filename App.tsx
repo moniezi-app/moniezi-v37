@@ -794,8 +794,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.9.0"; // v37.9.0: Reports screen shows one report at a time
-setReportAppVersion("37.9.0");
+const CUSTOMER_VERSION = "37.9.1"; // v37.9.1: tax exports grouped by what is sent, not by file format
+setReportAppVersion("37.9.1");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -8622,14 +8622,76 @@ html, body, #root {
 
                   
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <button onClick={handleShareTaxSummaryPDF} className={exportButtonPrimaryClass}>Share Tax Summary PDF</button>
-                    <button onClick={handleDownloadTaxSummaryPDF} className={exportButtonSecondaryClass}>Download Tax Summary PDF</button>
-                    <button onClick={handleExportTaxLedgerSpreadsheet} className={exportButtonTonalClass}>Export Tax Transactions Spreadsheet</button>
-                    <button onClick={handleExportMileageSpreadsheet} className={exportButtonTonalClass}>Export Mileage Spreadsheet</button>
-                    <button onClick={handleExportTaxLedgerCSV} className={exportButtonUtilityClass}>Export Tax Transactions CSV</button>
-                    <button onClick={handleExportMileageCSV} className={exportButtonUtilityClass}>Export Mileage CSV</button>
-                    <button onClick={handleExportReceiptsZip} className={`${exportButtonUtilityClass} md:col-span-2`}>Export Linked Receipts ZIP</button>
+                  {/* Grouped by WHAT is being sent, not by file format.
+                      Seven flat buttons were really four things — the summary,
+                      transactions, mileage and receipts — with Excel/CSV
+                      duplicating each other. Format is now a secondary choice
+                      inside each card, which is the order people think in. */}
+                  <div className="space-y-3">
+                    {[
+                      {
+                        title: 'Tax Summary',
+                        blurb: `A four-page package for ${taxPrepYear}: income, deductions, mileage and record checks.`,
+                        actions: [
+                          { label: 'Download PDF', onClick: handleDownloadTaxSummaryPDF, primary: true },
+                          { label: 'Share', onClick: handleShareTaxSummaryPDF, primary: false },
+                        ],
+                      },
+                      {
+                        title: 'Transactions',
+                        blurb: `Every income and expense entry for ${taxPrepYear}, with categories and receipt links.`,
+                        actions: [
+                          { label: 'Excel', onClick: handleExportTaxLedgerSpreadsheet, primary: true },
+                          { label: 'CSV', onClick: handleExportTaxLedgerCSV, primary: false },
+                        ],
+                      },
+                      {
+                        title: 'Mileage',
+                        blurb: `Every trip logged in ${taxPrepYear} — date, miles, purpose and deduction.`,
+                        actions: [
+                          { label: 'Excel', onClick: handleExportMileageSpreadsheet, primary: true },
+                          { label: 'CSV', onClick: handleExportMileageCSV, primary: false },
+                        ],
+                      },
+                      {
+                        title: 'Receipt images',
+                        blurb: `Every receipt photo linked to your ${taxPrepYear} records, in one ZIP file.`,
+                        actions: [
+                          { label: 'Download ZIP', onClick: handleExportReceiptsZip, primary: true },
+                        ],
+                      },
+                    ].map(group => (
+                      <div
+                        key={group.title}
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[15px] font-bold text-slate-900 dark:text-white">{group.title}</div>
+                            <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{group.blurb}</p>
+                          </div>
+                          <div className="flex shrink-0 gap-2">
+                            {group.actions.map(action => (
+                              <button
+                                key={action.label}
+                                onClick={action.onClick}
+                                className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                                  action.primary
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                {action.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="pt-1 text-xs text-slate-500 dark:text-slate-400">
+                      Excel opens in Excel, Numbers or Google Sheets. Choose CSV only if your
+                      accountant asked for it.
+                    </p>
                   </div>
 
                   <div className="mt-6 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
