@@ -794,8 +794,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.8.1"; // v37.8.1: footer truly centred; business-first filenames; one P&L export path
-setReportAppVersion("37.8.1");
+const CUSTOMER_VERSION = "37.9.0"; // v37.9.0: Reports screen shows one report at a time
+setReportAppVersion("37.9.0");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -1328,10 +1328,15 @@ export default function App() {
   // Reports screen menu (Settings-style tiles)
   const [reportsMenuSection, setReportsMenuSection] = useState<'pl'|'taxsnapshot'|'taxprep'|'mileage'|'planner'>('pl');
   const isMileageKeyboardEditing = isKeyboardEditing && currentPage === Page.Mileage;
-  const scrollToReportSection = (id: string, section: typeof reportsMenuSection) => {
+  /**
+   * These read as tabs, so they now behave as tabs: one report at a time.
+   * Previously they scrolled you into a page five reports long, which meant a
+   * tap on "Mileage" landed you mid-page and a small scroll put you somewhere
+   * else entirely.
+   */
+  const scrollToReportSection = (_id: string, section: typeof reportsMenuSection) => {
     setReportsMenuSection(section);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Keep Tax Prep record counters reactive
@@ -1831,11 +1836,13 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (currentPage === Page.Reports && scrollToTaxSnapshot && taxSnapshotRef.current) {
+    if (currentPage === Page.Reports && scrollToTaxSnapshot) {
+        // Select the tab first — the section is not rendered visible otherwise.
+        setReportsMenuSection('taxsnapshot');
         setTimeout(() => {
             taxSnapshotRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             setScrollToTaxSnapshot(false);
-        }, 100);
+        }, 120);
     }
   }, [currentPage, scrollToTaxSnapshot]);
 
@@ -8407,7 +8414,7 @@ html, body, #root {
                 </div>
               </div>
 {/* Pro-Grade U.S. P&L Statement */}
-              <div id="report-pl" className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
+              <div style={{ display: reportsMenuSection === 'pl' ? undefined : 'none' }} id="report-pl" className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
                 {/* Controls Header - NOT part of PDF */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3">
@@ -8545,7 +8552,7 @@ html, body, #root {
                 </div>
               </div>
 
-              <div id="report-taxsnapshot" ref={taxSnapshotRef} className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white p-5 sm:p-8 rounded-lg shadow-xl relative overflow-hidden border border-slate-200 dark:border-slate-800">
+              <div style={{ display: reportsMenuSection === 'taxsnapshot' ? undefined : 'none' }} id="report-taxsnapshot" ref={taxSnapshotRef} className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white p-5 sm:p-8 rounded-lg shadow-xl relative overflow-hidden border border-slate-200 dark:border-slate-800">
                 <div className="absolute top-0 right-0 w-80 h-80 bg-blue-50 dark:bg-blue-600/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8 relative z-10">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -8590,7 +8597,7 @@ html, body, #root {
                 
 
                 {/* Tax Prep Package (Exports) */}
-                <div id="report-taxprep" className="bg-white dark:bg-slate-950 p-5 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                <div style={{ display: reportsMenuSection === 'taxprep' ? undefined : 'none' }} id="report-taxprep" className="bg-white dark:bg-slate-950 p-5 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
@@ -8668,7 +8675,7 @@ html, body, #root {
                 </div>
 
                 {/* Mileage Tracker */}
-                <div id="report-mileage" className="bg-white dark:bg-slate-950 p-5 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                <div style={{ display: reportsMenuSection === 'mileage' ? undefined : 'none' }} id="report-mileage" className="bg-white dark:bg-slate-950 p-5 sm:p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -8700,7 +8707,7 @@ html, body, #root {
                   {renderMileageTripList()}
                 </div>
 
-<div id="report-planner" className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-lg rounded-3xl p-6 relative overflow-hidden">
+<div style={{ display: reportsMenuSection === 'planner' ? undefined : 'none' }} id="report-planner" className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-lg rounded-3xl p-6 relative overflow-hidden">
                   <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-blue-500/10 dark:bg-blue-400/10 opacity-0 dark:opacity-100 blur-2xl pointer-events-none" />
                   <button
                     onClick={() => setIsPlannerOpen(!isPlannerOpen)}
