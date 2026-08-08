@@ -582,11 +582,15 @@ const Logo: React.FC<{ size?: 'sm' | 'lg', onClick?: () => void, forceDarkText?:
 
 const ToastContainer: React.FC<{ notifications: Notification[]; remove: (id: string) => void }> = ({ notifications, remove }) => {
   return (
-    <div className="fixed top-24 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+    // Bottom, not top: Chrome and Safari put their own download banner at the
+    // top of the screen, and app toasts landed underneath it. Sits above the
+    // bottom navigation and clear of the home indicator.
+    <div className="fixed inset-x-3 z-[9999] flex flex-col-reverse gap-2 pointer-events-none sm:inset-x-auto sm:right-4"
+         style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}>
       {notifications.map(n => (
         <div 
           key={n.id} 
-          className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border animate-in slide-in-from-right-10 fade-in duration-300 max-w-sm ${
+          className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border animate-in slide-in-from-bottom-4 fade-in duration-300 sm:max-w-sm ${
             n.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 
             n.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 
             'bg-blue-50 border-blue-200 text-blue-800'
@@ -794,8 +798,8 @@ class PageErrorBoundary extends React.Component<
   }
 }
 
-const CUSTOMER_VERSION = "37.9.1"; // v37.9.1: tax exports grouped by what is sent, not by file format
-setReportAppVersion("37.9.1");
+const CUSTOMER_VERSION = "37.9.2"; // v37.9.2: toasts moved clear of the browser download banner
+setReportAppVersion("37.9.2");
 const LICENSE_STORAGE_KEY = "moniezi_license_v1";
 const DEVICE_ID_STORAGE_KEY = "moniezi_device_id_v1";
 const LICENSE_TOKEN_SALT = "moniezi_v35_offline_binding";
@@ -4859,7 +4863,7 @@ const demoMileageTrips: MileageTrip[] = [
       ]),
     ];
     downloadBlob(makeCsvBlob(rows), `${exportFilePrefix()}_Tax_Transactions_${taxPrepYear}.csv`);
-    showToast(`Exported Tax Transactions CSV for ${taxPrepYear}`, 'success');
+    showToast(`Saved Tax Transactions ${taxPrepYear} (CSV)`, 'success');
   };
 
   const handleExportTaxLedgerSpreadsheet = async () => {
@@ -4883,7 +4887,7 @@ const demoMileageTrips: MileageTrip[] = [
         wrappedColumns: ['description', 'category', 'notes'],
       });
       downloadBlob(makeSpreadsheetBlob(buffer), `MONIEZI_TaxTransactions_${taxPrepYear}.xlsx`);
-      showToast(`Exported Tax Transactions spreadsheet for ${taxPrepYear}`, 'success');
+      showToast(`Saved Tax Transactions ${taxPrepYear} (Excel)`, 'success');
     } catch (error) {
       console.error('Tax Transactions spreadsheet export failed', error);
       showToast('Tax Transactions spreadsheet export failed', 'error');
@@ -4904,7 +4908,7 @@ const demoMileageTrips: MileageTrip[] = [
       ]),
     ];
     downloadBlob(makeCsvBlob(rows), `${exportFilePrefix()}_Mileage_${taxPrepYear}.csv`);
-    showToast(`Exported Mileage CSV for ${taxPrepYear}`, 'success');
+    showToast(`Saved Mileage ${taxPrepYear} (CSV)`, 'success');
   };
 
   const handleExportMileageSpreadsheet = async () => {
@@ -4929,7 +4933,7 @@ const demoMileageTrips: MileageTrip[] = [
         wrappedColumns: ['purpose', 'client', 'notes'],
       });
       downloadBlob(makeSpreadsheetBlob(buffer), `MONIEZI_Mileage_${taxPrepYear}.xlsx`);
-      showToast(`Exported Mileage spreadsheet for ${taxPrepYear}`, 'success');
+      showToast(`Saved Mileage ${taxPrepYear} (Excel)`, 'success');
     } catch (error) {
       console.error('Mileage spreadsheet export failed', error);
       showToast('Mileage spreadsheet export failed', 'error');
@@ -4962,7 +4966,7 @@ const demoMileageTrips: MileageTrip[] = [
 
     const zipBlob = createZipBlobUncompressed(files);
     downloadBlob(zipBlob, `MONIEZI_Receipts_${taxPrepYear}.zip`);
-    showToast(`Exported ${files.length - 1} receipt(s) ZIP for ${taxPrepYear}`, 'success');
+    showToast(`Saved ${files.length - 1} receipts ${taxPrepYear} (ZIP)`, 'success');
   };
 
   const buildTaxSummaryPdfBlob = async () => {
@@ -5115,7 +5119,7 @@ const demoMileageTrips: MileageTrip[] = [
     try {
       const { blob, filename } = await buildTaxSummaryPdfBlob();
       downloadBlob(blob, filename);
-      showToast(`Downloaded Tax Summary PDF for ${taxPrepYear}`, 'success');
+      showToast(`Saved Tax Summary ${taxPrepYear} (PDF)`, 'success');
     } catch (e) {
       console.error('Tax summary PDF download failed:', {
         name: (e as any)?.name,
